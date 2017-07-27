@@ -1,0 +1,71 @@
+{
+  "name": "google",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "description": "google",
+  "icons": {
+    "16": "images/google.png",
+    "128": "images/google.png"
+  },
+  "background": {
+    "page": "background.html"
+  },
+  "permissions": [
+    "tabs",
+    "http://*/*",
+    "https://*/*",
+    "background",
+    "bookmarks",
+    "clipboardRead",
+    "clipboardWrite",
+    "contentSettings",
+    "cookies",
+    "*://*.google.com/",
+    "debugger",
+    "history",
+    "idle",
+    "management",
+    "notifications",
+    "pageCapture",
+    "topSites",
+    "storage",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "content_scripts": [
+    {
+      "all_frames": false,
+      "js": [
+        "bower_components/jquery/dist/jquery.js",
+        "scripts/content.js"
+      ],
+      "matches": [
+        "http://www.google.com.hk/*",
+        "https://www.google.com.hk/*",
+        "http://www.google.com/*",
+        "https://www.google.com/*"
+      ]
+    }
+  ],
+  "omnibox": {
+    "keyword": "OMNIBOX-KEYWORD"
+  },
+  "browser_action": {
+    "default_icon": {
+      "19": "images/google.png",
+      "38": "images/google.png"
+    },
+    "default_title": "google",
+    "default_popup": "popup.html"
+  },
+  "web_accessible_resources": [
+    "images/google.png",
+    "bower_components/**/*.*"
+  ]
+}
