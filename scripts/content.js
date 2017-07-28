@@ -1,5 +1,5 @@
 console.log('chrome_search');
-$(function () {
+$(function() {
     var href = location.href;
 
     /**
@@ -7,7 +7,7 @@ $(function () {
      * @param node
      * @param eventType
      */
-    var triggerMouseEvent = function (node, eventType) {
+    var triggerMouseEvent = function(node, eventType) {
         try {
             var clickEvent = document.createEvent('MouseEvents');
             clickEvent.initEvent(eventType, true, true);
@@ -16,23 +16,23 @@ $(function () {
             console.log('errr', node, eventType);
         }
     }
-    var simulateClick = function (node) {
+    var simulateClick = function(node) {
         triggerMouseEvent(node, "mouseover");
         triggerMouseEvent(node, "mousedown");
         triggerMouseEvent(node, "mouseup");
         triggerMouseEvent(node, "click");
     }
 
-    var getQueryString = function (url, name) {
+    var getQueryString = function(url, name) {
         var reg = new RegExp("[\?|\&]" + name + "=([^&]*)(&|$)", "i");
         var r = url.match(reg);
         if (r != null) return r[1];
         return null;
     }
 
-    var autoSearch = function (keyword) {
+    var autoSearch = function(keyword) {
         $('#lst-ib').val(keyword);
-        setInterval(function () {
+        setInterval(function() {
             $('#lst-ib').blur();
             $('#tsf').submit();
         }, 1000);
@@ -46,7 +46,7 @@ $(function () {
         var q = decodeURIComponent(getQueryString(href, 'q'));
         console.log('q', q);
         if (q) {
-            chrome.extension.sendRequest({handler: 'handle_search', q: q}, function (result) {
+            chrome.extension.sendRequest({ handler: 'handle_search', q: q }, function(result) {
                 console.log('result', result);
 
                 /**
@@ -66,7 +66,7 @@ $(function () {
         /**
          * 获取模拟搜索词
          */
-        chrome.extension.sendRequest({handler: 'simulate_keyword'}, function (result) {
+        chrome.extension.sendRequest({ handler: 'simulate_keyword' }, function(result) {
             if (result.keyword) {
                 autoSearch(result.keyword);
             }
