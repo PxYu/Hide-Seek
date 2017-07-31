@@ -56,9 +56,11 @@ $(function() {
                     console.log('模拟搜索处理，自动点击');
                     var alist = $('#res .g .r a');
                     var idx = Math.floor(Math.random() * alist.length);
-
-                    console.log(alist[idx]);
-                    alist[idx].click();
+                    // 插入检测
+                    if (!alist[idx].href.endsWith('.pdf')) {
+                        console.log(alist[idx]);
+                        alist[idx].click();
+                    }
                 }
             });
         }
