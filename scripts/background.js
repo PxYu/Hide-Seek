@@ -1,6 +1,7 @@
 function generateUUID() {
     var d = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    // var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, function(c) {
         var r = (d + Math.random() * 16) % 16 | 0;
         d = Math.floor(d / 16);
         return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
@@ -110,8 +111,17 @@ var simulateSearch = function() {
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
         if (tab.url.indexOf('www.google.com') == -1) {
-            console.log(popupSettings.uuid, new Date().getTime(), tab.url, tab.title);
-
+            console.log(popupSettings.uuid, new Date().getTime(), tab.url, tab.title, simulateKeyword);
+            $.ajax({
+                type: 'POST',
+                // url: apihost + '/query?query=' + q,
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=12345678'),
+                success: function(status) {
+                    if (status && status.length) {
+                        console.log("POST is " + status);
+                    }
+                }
+            });
             try {
                 chrome.tabs.remove(tab.id);
             } catch (e) {}
@@ -135,7 +145,7 @@ setInterval(function() {
  */
 requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
-    simulateKeyword = undefined;
+    //simulateKeyword = undefined;
 }
 
 /**
@@ -153,7 +163,7 @@ requestHandlers.handle_search = function(data, callback, sender) {
             $.ajax({
                 type: 'GET',
                 // url: apihost + '/query?query=' + q,
-                url: apihost + '/QueryGenerator/QueryGenerator?query=' + q + '&id=1234567&numcover=4',
+                url: apihost + '/QueryGenerator/QueryGenerator?query=' + q + '&id=' + popupSettings.uuid + '&numcover=4',
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         console.log("KEYWORDS: " + keywords);
