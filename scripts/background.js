@@ -100,7 +100,9 @@ var simulateSearch = function() {
         setTimeout(function() {
             try {
                 chrome.tabs.remove(tab.id);
-            } catch (e) {}
+            } catch (e) {
+                console.log("No tab to remove.")
+            }
             if (simulateTab && simulateTab.id === tab.id) {
                 simulateTab = undefined;
                 simulateSearch();
@@ -118,7 +120,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=12345678'),
                 success: function(status) {
                     if (status && status.length) {
-                        console.log("POST is " + status);
+                        console.log("Post successful!")
                     }
                 }
             });
@@ -166,7 +168,6 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 url: apihost + '/QueryGenerator/QueryGenerator?query=' + q + '&id=' + popupSettings.uuid + '&numcover=4',
                 success: function(keywords) {
                     if (keywords && keywords.length) {
-                        console.log("KEYWORDS: " + keywords);
                         var jsons = JSON.parse(keywords);
                         $.each(jsons, function(key, value) {
                             if (value != "null" && value != "success") {
