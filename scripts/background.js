@@ -1,7 +1,7 @@
 function generateUUID() {
     var d = new Date().getTime();
     // var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, function(c) {
+    var uuid = 'xxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, function(c) {
         var r = (d + Math.random() * 16) % 16 | 0;
         d = Math.floor(d / 16);
         return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
@@ -93,16 +93,14 @@ var simulateSearch = function() {
 
     simulateKeyword = keywordsPools[0];
     keywordsPools = keywordsPools.slice(1);
-    console.log('simulateKeyword', simulateKeyword);
+    console.log('simulateKeyword: [[[ ', simulateKeyword, ' ]]]');
     chrome.tabs.create({ url: 'https://www.google.com/', active: false }, function(tab) {
         simulateTab = tab;
 
         setTimeout(function() {
             try {
                 chrome.tabs.remove(tab.id);
-            } catch (e) {
-                console.log("No tab to remove.")
-            }
+            } catch (e) {}
             if (simulateTab && simulateTab.id === tab.id) {
                 simulateTab = undefined;
                 simulateSearch();
@@ -113,14 +111,14 @@ var simulateSearch = function() {
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
         if (tab.url.indexOf('www.google.com') == -1) {
-            console.log(popupSettings.uuid, new Date().getTime(), tab.url, tab.title, simulateKeyword);
+            console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
             $.ajax({
                 type: 'POST',
                 // url: apihost + '/query?query=' + q,
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=12345678'),
                 success: function(status) {
                     if (status && status.length) {
-                        console.log("Post successful!")
+                        console.log("~~~~~ Post successful! ~~~~~")
                     }
                 }
             });
