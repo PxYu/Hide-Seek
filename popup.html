@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
     <link rel="stylesheet" href="styles/popup.css">
+    <link rel="stylesheet" href="styles/fonts.css">
     <link rel="stylesheet" href="styles/toggle.css">
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/tether/dist/js/tether.js"></script>
@@ -12,12 +13,13 @@
     <script src="scripts/popup.js"></script>
 </head>
 
+
 <body>
     <div id="alert" style="position: fixed; top: 0px; left: 0px; right: 0px;"></div>
-
-    <h3 style="text-align: center;">
-        <a href="javascript:;" target="_blank">搜索</a>
-    </h3>
+    <header>
+        <img id="logo" src="images/google.png">
+        <h1 id="title">Hide & Seek</h1>
+    </header>
 
     <div class="onoffswitch">
         <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch">
@@ -26,9 +28,20 @@
         <span class="onoffswitch-switch"></span>
     </label>
     </div>
+    <div id="cp">
+        Privacy is one click away.
+    </div>
+
+    </div>
 
     <!-- <button id="start_btn" class="btn btn-outline-success btn-lg btn-block" style="margin-top: 15px;">启动</button>
 <button id="stop_btn" class="btn btn-outline-warning btn-lg btn-block" style="margin-top: 15px;">停止</button> -->
+
+    <footer>
+        <div class="name">HCDM Group</div>
+        <div class="name">University of Virginia</div>
+    </footer>
+
 </body>
 
 </html>
