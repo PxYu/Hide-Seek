@@ -105,7 +105,7 @@ var simulateSearch = function() {
                 simulateTab = undefined;
                 simulateSearch();
             }
-        }, 20 * 1000);
+        }, 30 * 1000);
     });
 }
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
@@ -115,7 +115,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
             $.ajax({
                 type: 'POST',
                 // url: apihost + '/query?query=' + q,
-                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=12345678'),
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
                 success: function(status) {
                     if (status && status.length) {
                         console.log("~~~~~ Post successful! ~~~~~")
