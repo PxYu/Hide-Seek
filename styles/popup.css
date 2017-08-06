@@ -62,3 +62,8 @@ footer {
     font-size: 16px;
     font-family: 'Acme', 'Gochi Hand';
 }
+
+#viz {
+    height: 160px;
+    position: relative;
+}
