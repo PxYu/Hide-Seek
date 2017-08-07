@@ -105,13 +105,16 @@ var simulateSearch = function() {
                 simulateTab = undefined;
                 simulateSearch();
             }
-        }, 30 * 1000);
+        }, 50 * 1000);
     });
 }
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-    if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
+    var title = changeInfo.title;
+    // if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
+    if (simulateTab && simulateTab.id === tabId && title) {
         if (tab.url.indexOf('www.google.com') == -1) {
-            console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
+            // console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
+            console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
             $.ajax({
                 type: 'POST',
                 // url: apihost + '/query?query=' + q,
