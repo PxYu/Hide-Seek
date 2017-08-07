@@ -326,6 +326,7 @@ var theme2 = {
 };
 
 $(function() {
-    var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme1));
+    $("user-name").text("<p>User id: <b>625e-e409-43c0-8c18</b></p>");
+    var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme2));
     var chart2 = Highcharts.chart('container2', Highcharts.merge(option2, theme2));
 });
