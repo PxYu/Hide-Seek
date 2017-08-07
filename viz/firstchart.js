@@ -233,11 +233,25 @@ var theme2 = {
 
 };
 
+function generateUUID() {
+    var d = new Date().getTime();
+    // var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var uuid = 'xxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random() * 16) % 16 | 0;
+        d = Math.floor(d / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+    return uuid;
+};
+
 $(function() {
-    $("#user-id").html("625e-e409-43c0-8c18");
-    // var dt = new Date(Date.now()).toLocaleString();
-    var dt = new Date().toJSON().slice(0, 10);
-    $("#start-date").html(dt);
+    // $("#start-date").html("2017-01-01");
+    // $("#user-id").html("e5cd-5fbd-4106-93a7");
+    $("#start-date").html(store.get('popupSettings').date);
+    $("#user-id").html(store.get('popupSettings').uuid);
+    // var dt = new Date().toJSON().slice(0, 10);
+    // console.log(store.get('popupSettings').date);
+    // console.log(store.get('popupSettings').uuid);
     console.log("hello");
     var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme2));
     var chart2 = Highcharts.chart('container2', Highcharts.merge(option2, theme2));

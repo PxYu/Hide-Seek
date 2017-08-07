@@ -66,10 +66,15 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
  */
 var popupSettings = store.get('popupSettings') || {
     started: true,
-    uuid: generateUUID()
+    uuid: generateUUID(),
+    date: new Date()
 };
 var savePopupSettings = function() {
     store.set('popupSettings', popupSettings);
+    console.log("+++++++++++已设置全局变量++++++++++");
+    console.log(store.get('popupSettings').started);
+    console.log(store.get('popupSettings').uuid);
+    console.log(store.get('popupSettings').date);
 }
 if (!popupSettings.uuid) {
     popupSettings.uuid = generateUUID();
