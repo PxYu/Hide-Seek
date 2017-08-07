@@ -1,6 +1,19 @@
+body {
+    background-image: url(background.png);
+}
+
+#title {
+    font-family: 'Acme', sans-serif;
+    text-align: center;
+    font-size: 32px;
+    /* margin-top: 50px; */
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
 .container {
     width: 50%;
-    height: 400px;
+    height: 60%;
     float: left;
 }
 
@@ -8,9 +21,45 @@
     margin: 0 auto;
 }
 
-#user-name {
+.prompt {
+    height: 20px;
+    font-family: 'Acme', "Times New Roman";
+    font-size: 20px;
+    /* text-align: center; */
+    color: gray;
+}
+
+.subtitle-data {
     margin: 0 auto;
     height: 20px;
-    font-family: 'Acme', sans-serif;
+    font-family: 'Acme', "Times New Roman";
     font-size: 20px;
+    /* text-align: center; */
+}
+
+.subtitle {
+    margin: 0 auto;
+    text-align: center;
+}
+
+#subtitle {
+    margin: 20px;
+}
+
+#footerwrapper {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}
+
+footer {
+    border-top: 2px dashed grey;
+    width: 100%;
+    font-family: 'Acme', "Times New Roman";
+    margin: 0 auto;
+    text-align: center;
+    position: fixed;
+    padding: 10px;
+    font-size: 16px;
+    bottom: 0;
 }

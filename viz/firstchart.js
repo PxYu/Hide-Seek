@@ -1,95 +1,3 @@
-// $(function() {
-//     var myChart = Highcharts.chart('container', {
-//         chart: {
-//             plotBackgroundColor: null,
-//             plotBorderWidth: null,
-//             plotShadow: false,
-//             type: 'pie'
-//         },
-//         title: {
-//             text: 'Topical Distribution of Your Queries'
-//         },
-//         tooltip: {
-//             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-//         },
-//         plotOptions: {
-//             pie: {
-//                 allowPointSelect: true,
-//                 cursor: 'pointer',
-//                 dataLabels: {
-//                     enabled: false
-//                 },
-//                 showInLegend: true
-//             }
-//         },
-//         series: [{
-//             name: 'Topics',
-//             colorByPoint: true,
-//             data: [{
-//                 name: 'sports',
-//                 y: 30
-//             }, {
-//                 name: 'business',
-//                 y: 25
-//             }, {
-//                 name: 'culture',
-//                 y: 20
-//             }, {
-//                 name: 'politics',
-//                 y: 15
-//             }, {
-//                 name: 'others',
-//                 y: 10
-//             }]
-//         }]
-//     });
-
-//     var myChart = Highcharts.chart('container2', {
-//         chart: {
-//             plotBackgroundColor: null,
-//             plotBorderWidth: null,
-//             plotShadow: false,
-//             type: 'pie'
-//         },
-//         title: {
-//             text: 'Topical Distribution of Generated Queries'
-//         },
-//         tooltip: {
-//             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-//         },
-//         plotOptions: {
-//             pie: {
-//                 allowPointSelect: true,
-//                 cursor: 'pointer',
-//                 dataLabels: {
-//                     enabled: false
-//                 },
-//                 showInLegend: true
-//             }
-//         },
-//         series: [{
-//             name: 'Topics',
-//             colorByPoint: true,
-//             data: [{
-//                 name: 'sports',
-//                 y: 30
-//             }, {
-//                 name: 'business',
-//                 y: 25
-//             }, {
-//                 name: 'culture',
-//                 y: 20
-//             }, {
-//                 name: 'politics',
-//                 y: 15
-//             }, {
-//                 name: 'others',
-//                 y: 10
-//             }]
-//         }]
-//     });
-// });
-
 var option1 = {
     chart: {
         plotBackgroundColor: null,
@@ -326,7 +234,11 @@ var theme2 = {
 };
 
 $(function() {
-    $("user-name").text("<p>User id: <b>625e-e409-43c0-8c18</b></p>");
+    $("#user-id").html("625e-e409-43c0-8c18");
+    // var dt = new Date(Date.now()).toLocaleString();
+    var dt = new Date().toJSON().slice(0, 10);
+    $("#start-date").html(dt);
+    console.log("hello");
     var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme2));
     var chart2 = Highcharts.chart('container2', Highcharts.merge(option2, theme2));
 });

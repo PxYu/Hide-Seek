@@ -105,7 +105,7 @@ var simulateSearch = function() {
                 simulateTab = undefined;
                 simulateSearch();
             }
-        }, 50 * 1000);
+        }, 10 * 1000);
     });
 }
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
