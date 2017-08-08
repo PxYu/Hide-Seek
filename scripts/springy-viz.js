@@ -17,8 +17,8 @@ var politics = graph.newNode({ label: 'Politics' });
 var food = graph.newNode({ label: 'Food' })
 
 // connect them with an edge
-graph.newEdge(sports, finance);
-graph.newEdge(sports, politics);
-graph.newEdge(sports, food);
+graph.newEdge(sports, finance, { length: 0.75 });
+graph.newEdge(sports, politics, { length: 0.75 });
+graph.newEdge(sports, food, { length: 0.75 });
 
 $('#my_canvas').springy({ graph: graph });
