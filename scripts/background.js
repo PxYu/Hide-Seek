@@ -175,10 +175,14 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
-                        console.log("=====!!!!!=====" + keywords);
+                        // console.log("=====!!!!!=====" + keywords);
+                        // console.log("=====!!!!!=====" + keywords.length);
                         $.each(jsons, function(key, value) {
-                            if (value != "null" && value != "success") {
-                                keywordsPools = keywordsPools.concat(value);
+                            if (key == "input") {
+                                console.log("Submitted topic is: " + value);
+                            } else if (key != "db") {
+                                keywordsPools = keywordsPools.concat(key);
+                                console.log("&&&Topic: " + value);
                             }
                         })
                     }
