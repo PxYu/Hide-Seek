@@ -11,7 +11,7 @@ function generateUUID() {
 
 
 /**
- * 处理方法
+ * handling method
  */
 var requestHandlers = {
     global_set_store: function(data, callback, sender) {
@@ -69,7 +69,8 @@ var popupSettings = store.get('popupSettings') || {
     started: true,
     uuid: generateUUID(),
     date: new Date()
-};
+}
+
 var savePopupSettings = function() {
     store.set('popupSettings', popupSettings);
     console.log("+++++++++++已设置全局变量++++++++++");
@@ -77,6 +78,9 @@ var savePopupSettings = function() {
     console.log(store.get('popupSettings').uuid);
     console.log(store.get('popupSettings').date);
 }
+
+savePopupSettings();
+
 if (!popupSettings.uuid) {
     popupSettings.uuid = generateUUID();
     savePopupSettings();
@@ -94,7 +98,6 @@ function initializeTopic(topics) {
     var topicCount = {};
     console.log(topics);
     for (var i = 0; i < topics.length; i++) {
-        //console.log(topics[i]);
         topicCount[topics[i]] = 0;
     }
     console.log(topicCount);
@@ -104,15 +107,15 @@ function initializeTopic(topics) {
 var userTopics = store.get('userTopics') || initializeTopic(topics);
 var generatedTopics = store.get('generatedTopics') || initializeTopic(topics);
 
-console.log("C:::: " + userTopics["Arts"]);
-
 var saveTopics = function() {
     store.set('userTopics', userTopics);
     store.set('generatedTopics', generatedTopics);
     console.log("+++++++++++已设置topic变量++++++++++");
-    console.log(store.get('userTopics')["Arts"]);
-    console.log(store.get('generatedTopics')["Arts"]);
 }
+
+saveTopics();
+console.log(store.get('userTopics')["Arts"]);
+console.log(store.get('generatedTopics')["Arts"]);
 
 /**
  * 模拟搜索
@@ -134,7 +137,6 @@ var simulateSearch = function() {
     console.log('simulateKeyword: [[[ ', simulateKeyword, ' ]]]');
     chrome.tabs.create({ url: 'https://www.google.com/', active: false }, function(tab) {
         simulateTab = tab;
-
         setTimeout(function() {
             try {
                 chrome.tabs.remove(tab.id);
@@ -155,7 +157,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
             console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
             $.ajax({
                 type: 'POST',
-                // url: apihost + '/query?query=' + q,
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
                 success: function(status) {
                     if (status && status.length) {
@@ -203,7 +204,6 @@ requestHandlers.handle_search = function(data, callback, sender) {
         if (popupSettings.started) {
             $.ajax({
                 type: 'GET',
-                // url: apihost + '/query?query=' + q,
                 url: apihost + '/QueryGenerator/QueryGenerator?query=' + q + '&id=' + popupSettings.uuid + '&numcover=4',
                 success: function(keywords) {
                     if (keywords && keywords.length) {
@@ -211,9 +211,15 @@ requestHandlers.handle_search = function(data, callback, sender) {
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
                                 console.log("Submitted topic is: " + value);
+                                userTopics[value] += 1;
+                                saveTopics();
+                                console.log(store.get('userTopics')[value]);
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 console.log("&&&Topic: " + value);
+                                generatedTopics[value] += 1;
+                                saveTopics();
+                                console.log(store.get('generatedTopics')[value]);
                             }
                         })
                     }
