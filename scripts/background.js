@@ -55,7 +55,7 @@ var requestHandlers = {
 }
 
 /**
- * 消息通信
+ * message passing
  */
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     requestHandlers[request.handler](request, sendResponse, sender);
@@ -63,7 +63,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 
 
 /**
- * 全局设置
+ * data storage
  */
 var popupSettings = store.get('popupSettings') || {
     started: true,
@@ -117,8 +117,11 @@ saveTopics();
 console.log(store.get('userTopics')["Arts"]);
 console.log(store.get('generatedTopics')["Arts"]);
 
+var last_generated_topics = [];
+var last_user_topic;
+
 /**
- * 模拟搜索
+ * simulating searches
  */
 var keywordsPools = [],
     simulateKeyword, simulateTab;
@@ -208,15 +211,18 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
+                        last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
                                 console.log("Submitted topic is: " + value);
+                                last_user_topic = value;
                                 userTopics[value] += 1;
                                 saveTopics();
                                 console.log(store.get('userTopics')[value]);
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 console.log("&&&Topic: " + value);
+                                last_generated_topics.push(value);
                                 generatedTopics[value] += 1;
                                 saveTopics();
                                 console.log(store.get('generatedTopics')[value]);
