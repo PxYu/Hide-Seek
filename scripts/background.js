@@ -9,6 +9,7 @@ function generateUUID() {
     return uuid;
 };
 
+
 /**
  * 处理方法
  */
@@ -79,6 +80,38 @@ var savePopupSettings = function() {
 if (!popupSettings.uuid) {
     popupSettings.uuid = generateUUID();
     savePopupSettings();
+}
+
+var topics = ["Arts", "Business", "Computers",
+    "Games", "Health", "Home",
+    "News", "Recreation", "Reference",
+    "Regional", "Science", "Shopping",
+    "Society", "Sports", "Kids & Teens Directory",
+    "World"
+]
+
+function initializeTopic(topics) {
+    var topicCount = {};
+    console.log(topics);
+    for (var i = 0; i < topics.length; i++) {
+        //console.log(topics[i]);
+        topicCount[topics[i]] = 0;
+    }
+    console.log(topicCount);
+    return topicCount;
+}
+
+var userTopics = store.get('userTopics') || initializeTopic(topics);
+var generatedTopics = store.get('generatedTopics') || initializeTopic(topics);
+
+console.log("C:::: " + userTopics["Arts"]);
+
+var saveTopics = function() {
+    store.set('userTopics', userTopics);
+    store.set('generatedTopics', generatedTopics);
+    console.log("+++++++++++已设置topic变量++++++++++");
+    console.log(store.get('userTopics')["Arts"]);
+    console.log(store.get('generatedTopics')["Arts"]);
 }
 
 /**
@@ -175,8 +208,6 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
-                        // console.log("=====!!!!!=====" + keywords);
-                        // console.log("=====!!!!!=====" + keywords.length);
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
                                 console.log("Submitted topic is: " + value);
