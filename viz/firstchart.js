@@ -6,6 +6,27 @@ Highcharts.createElement('link', {
     type: 'text/css'
 }, null, document.getElementsByTagName('head')[0]);
 
+
+var bgp = chrome.extension.getBackgroundPage();
+
+var userData = function updateUserData() {
+    var temp = bgp.userTopics;
+    var arr = [];
+    $.each(temp, function(key, value) {
+        arr.push({ name: key, y: value });
+    })
+    return arr;
+}
+
+var generatedData = function updateGeneratedData() {
+    var temp = bgp.generatedTopics;
+    var arr = [];
+    $.each(temp, function(key, value) {
+        arr.push({ name: key, y: value });
+    })
+    return arr;
+}
+
 var option1 = {
     chart: {
         type: 'pie',
@@ -26,22 +47,23 @@ var option1 = {
     series: [{
         name: 'Topics',
         colorByPoint: true,
-        data: [{
-            name: 'sports',
-            y: 30
-        }, {
-            name: 'business',
-            y: 25
-        }, {
-            name: 'culture',
-            y: 20
-        }, {
-            name: 'politics',
-            y: 15
-        }, {
-            name: 'others',
-            y: 10
-        }]
+        // data: [{
+        //     name: 'sports',
+        //     y: 30
+        // }, {
+        //     name: 'business',
+        //     y: 25
+        // }, {
+        //     name: 'culture',
+        //     y: 20
+        // }, {
+        //     name: 'politics',
+        //     y: 15
+        // }, {
+        //     name: 'others',
+        //     y: 10
+        // }]
+        data: userData()
     }]
 }
 
@@ -65,22 +87,23 @@ var option2 = {
     series: [{
         name: 'Topics',
         colorByPoint: true,
-        data: [{
-            name: 'sports',
-            y: 30
-        }, {
-            name: 'business',
-            y: 25
-        }, {
-            name: 'culture',
-            y: 20
-        }, {
-            name: 'politics',
-            y: 15
-        }, {
-            name: 'others',
-            y: 10
-        }]
+        // data: [{
+        //     name: 'sports',
+        //     y: 30
+        // }, {
+        //     name: 'business',
+        //     y: 25
+        // }, {
+        //     name: 'culture',
+        //     y: 20
+        // }, {
+        //     name: 'politics',
+        //     y: 15
+        // }, {
+        //     name: 'others',
+        //     y: 10
+        // }]
+        data: generatedData()
     }]
 }
 
@@ -146,14 +169,8 @@ var theme = Highcharts.theme = {
 };
 
 $(function() {
-    // $("#start-date").html("2017-01-01");
-    // $("#user-id").html("e5cd-5fbd-4106-93a7");
     $("#start-date").html(store.get('popupSettings').date.slice(0, 10));
     $("#user-id").html(store.get('popupSettings').uuid);
-    // var dt = new Date().toJSON().slice(0, 10);
-    // console.log(store.get('popupSettings').date);
-    // console.log(store.get('popupSettings').uuid);
     var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme));
     var chart2 = Highcharts.chart('container2', Highcharts.merge(option2, theme));
-
 });

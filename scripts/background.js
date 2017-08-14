@@ -65,6 +65,8 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 /**
  * data storage
  */
+
+// part 1: global setting including offswitch, user_id and starting date
 var popupSettings = store.get('popupSettings') || {
     started: true,
     uuid: generateUUID(),
@@ -86,6 +88,7 @@ if (!popupSettings.uuid) {
     savePopupSettings();
 }
 
+// part 2: save topic history, for visualization.html
 var topics = ["Arts", "Business", "Computers",
     "Games", "Health", "Home",
     "News", "Recreation", "Reference",
@@ -117,8 +120,17 @@ saveTopics();
 console.log(store.get('userTopics')["Arts"]);
 console.log(store.get('generatedTopics')["Arts"]);
 
-var last_generated_topics = [];
-var last_user_topic;
+// part 3: save topic history, for popup.html
+
+var last_user_topic = store.get('lut') || undefined;
+var last_generated_topics = store.get('lgt') || [];
+
+var saveLastTopics = function() {
+    store.set('lut', last_user_topic);
+    store.set('lgt', last_generated_topics);
+}
+
+saveLastTopics();
 
 /**
  * simulating searches
@@ -211,23 +223,24 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
-                        last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
                                 console.log("Submitted topic is: " + value);
                                 last_user_topic = value;
                                 userTopics[value] += 1;
-                                saveTopics();
+                                // saveTopics();
                                 console.log(store.get('userTopics')[value]);
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 console.log("&&&Topic: " + value);
                                 last_generated_topics.push(value);
                                 generatedTopics[value] += 1;
-                                saveTopics();
+                                // saveTopics();
                                 console.log(store.get('generatedTopics')[value]);
                             }
                         })
+                        saveTopics();
+                        saveLastTopics();
                     }
                 }
             });
