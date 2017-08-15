@@ -2,8 +2,6 @@ $(document).ready(function() {
     var canvas = document.getElementById("my_canvas");
     canvas.width = $("#viz").width() * 0.8;
     canvas.height = $("#viz").height();
-    // canvas.width = canvas.parents("div").eq(0).width();
-    // canvas.width = canvas.parents("div").eq(0).height();
 });
 
 // acquire data from background page

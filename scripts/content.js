@@ -54,19 +54,24 @@ $(function() {
                  */
                 if (result && result.simulate) {
                     console.log('模拟搜索处理，自动点击');
-                    var alist = $('#res .g .r a');
-                    var idx = Math.floor(Math.random() * alist.length);
-                    // 插入检测
-                    if (!alist[idx].href.endsWith('.pdf')) {
-                        console.log(alist[idx]);
-                        alist[idx].click();
+                    // var alist = $('#res .g .r a');
+                    // var idx = Math.floor(Math.random() * alist.length);
+                    // if (!alist[idx].href.endsWith('.pdf')) {
+                    //     console.log(alist[idx]);
+                    //     alist[idx].click();
+                    // }
+                    var rlist = $("#res .g .r");
+                    var idx = Math.floor(Math.random() * rlist.length);
+                    // insert checking (!!! does not work, don't know why)
+                    if (rlist[idx].childElementCount == 1) {
+                        rlist[idx].firstElementChild.click();
                     }
                 }
             });
         }
     } else if (href === 'https://www.google.com/') {
         /**
-         * 获取模拟搜索词
+         * simulate getting query word
          */
         chrome.extension.sendRequest({ handler: 'simulate_keyword' }, function(result) {
             if (result.keyword) {
