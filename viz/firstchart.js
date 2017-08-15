@@ -9,20 +9,24 @@ Highcharts.createElement('link', {
 
 var bgp = chrome.extension.getBackgroundPage();
 
-var userData = function updateUserData() {
+var userData = function() {
     var temp = bgp.userTopics;
     var arr = [];
     $.each(temp, function(key, value) {
-        arr.push({ name: key, y: value });
+        if (value > 0) {
+            arr.push({ name: key, y: value });
+        }
     })
     return arr;
 }
 
-var generatedData = function updateGeneratedData() {
+var generatedData = function() {
     var temp = bgp.generatedTopics;
     var arr = [];
     $.each(temp, function(key, value) {
-        arr.push({ name: key, y: value });
+        if (value > 0) {
+            arr.push({ name: key, y: value });
+        }
     })
     return arr;
 }
@@ -171,6 +175,10 @@ var theme = Highcharts.theme = {
 $(function() {
     $("#start-date").html(store.get('popupSettings').date.slice(0, 10));
     $("#user-id").html(store.get('popupSettings').uuid);
-    var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme));
-    var chart2 = Highcharts.chart('container2', Highcharts.merge(option2, theme));
+    if (userData().length > 0) {
+        var chart1 = Highcharts.chart('container', Highcharts.merge(option1, theme));
+        var chart2 = Highcharts.chart('container2', Highcharts.merge(option2, theme));
+    } else {
+        alert("Make your first google search with Hide & Seek before checking reports!")
+    }
 });

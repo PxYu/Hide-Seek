@@ -168,7 +168,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     // if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
     if (simulateTab && simulateTab.id === tabId && title) {
         if (tab.url.indexOf('www.google.com') == -1) {
-            // console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
             console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
             $.ajax({
                 type: 'POST',
@@ -206,7 +205,7 @@ requestHandlers.simulate_keyword = function(data, callback, sender) {
 }
 
 /**
- * 处理搜索
+ * search handling
  */
 var lastSearch;
 requestHandlers.handle_search = function(data, callback, sender) {
@@ -223,6 +222,7 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
+                        last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
                                 console.log("Submitted topic is: " + value);
@@ -235,7 +235,6 @@ requestHandlers.handle_search = function(data, callback, sender) {
                                 console.log("&&&Topic: " + value);
                                 last_generated_topics.push(value);
                                 generatedTopics[value] += 1;
-                                // saveTopics();
                                 console.log(store.get('generatedTopics')[value]);
                             }
                         })
