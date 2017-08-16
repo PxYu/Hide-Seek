@@ -63,7 +63,7 @@ $(function() {
                     var rlist = $("#res .g .r");
                     var idx = Math.floor(Math.random() * rlist.length);
                     // insert checking (!!! does not work, don't know why)
-                    if (rlist[idx].childElementCount == 1) {
+                    if (rlist[idx].childElementCount < 2) {
                         rlist[idx].firstElementChild.click();
                     }
                 }

@@ -21,9 +21,9 @@ h1#title {
 #cp {
     text-align: center;
     font-size: 16px;
-    font-family: 'Ruda', 'Gochi Hand', cursive;
+    font-family: Times New Roman;
     /* margin: 5px; */
-    padding-bottom: 20px;
+    padding: 10px;
 }
 
 body {
@@ -64,6 +64,9 @@ footer {
 }
 
 #viz {
-    height: 160px;
+    /* height: 160px; */
+    border-top: 1px dashed grey;
+    border-bottom: 1px dashed grey;
+    text-align: center;
     position: relative;
 }

@@ -33,7 +33,7 @@ $(function() {
 
         showHideButton();
 
-        fixedAlert('启动成功');
+        // fixedAlert('启动成功');
     }
 
     var stopHandle = function() {
@@ -42,7 +42,7 @@ $(function() {
 
         showHideButton();
 
-        fixedAlert('停止成功');
+        // fixedAlert('停止成功');
 
         BGPage.keywordsPools = [];
     }
