@@ -107,8 +107,13 @@ function initializeTopic(topics) {
     return topicCount;
 }
 
-var userTopics = store.get('userTopics') || initializeTopic(topics);
-var generatedTopics = store.get('generatedTopics') || initializeTopic(topics);
+
+
+// var userTopics = store.get('userTopics') || initializeTopic(topics);
+// var generatedTopics = store.get('generatedTopics') || initializeTopic(topics);
+
+var userTopics = store.get('userTopics') || {};
+var generatedTopics = store.get('generatedTopics') || {};
 
 var saveTopics = function() {
     store.set('userTopics', userTopics);
@@ -116,12 +121,20 @@ var saveTopics = function() {
     console.log("+++++++++++已设置topic变量++++++++++");
 }
 
+var addTopic = function(topicCollection, topic) {
+    if (topicCollection.hasOwnProperty(topic)) {
+        topicCollection[topic] += 1;
+    } else {
+        topicCollection[topic] = 1;
+    }
+    saveTopics();
+}
+
 saveTopics();
 console.log(store.get('userTopics')["Arts"]);
 console.log(store.get('generatedTopics')["Arts"]);
 
 // part 3: save topic history, for popup.html
-
 var last_user_topic = store.get('lut') || undefined;
 var last_generated_topics = store.get('lgt') || [];
 
@@ -227,14 +240,18 @@ requestHandlers.handle_search = function(data, callback, sender) {
                             if (key == "input") {
                                 console.log("Submitted topic is: " + value);
                                 last_user_topic = value;
-                                userTopics[value] += 1;
+                                // userTopics[value] += 1;
+                                addTopic(userTopics, value);
                                 // saveTopics();
                                 console.log(store.get('userTopics')[value]);
+                            } else if (key == "notopic") {
+                                keywordsPools = keywordsPools.concat(value);
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 console.log("&&&Topic: " + value);
                                 last_generated_topics.push(value);
-                                generatedTopics[value] += 1;
+                                // generatedTopics[value] += 1;
+                                addTopic(generatedTopics, value);
                                 console.log(store.get('generatedTopics')[value]);
                             }
                         })

@@ -4,10 +4,19 @@ $(document).ready(function() {
     canvas.height = $("#viz").height();
 });
 
+var parseTopic = function(string) {
+    return string ? string.split("/")[3].replace(/_/g, ' ') : undefined;
+}
+
 // acquire data from background page
 var bgp = chrome.extension.getBackgroundPage();
-var ut = bgp.last_user_topic;
-var gt = bgp.last_generated_topics;
+var ut = parseTopic(bgp.last_user_topic);
+var gt = [];
+console.log(bgp.last_generated_topics);
+$.each(bgp.last_generated_topics, function(index, value) {
+    gt.push(parseTopic(value));
+})
+console.log(gt);
 
 if (ut == null || ut == undefined) {
     $('#viz').css("height", "50px");
