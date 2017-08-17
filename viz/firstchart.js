@@ -69,34 +69,12 @@ var userTopics = bgp.userTopics;
 var generatedTopics = bgp.generatedTopics;
 
 console.log(userTopics);
-
-// var userData = function() {
-//     var temp = bgp.userTopics;
-//     var arr = [];
-//     $.each(temp, function(key, value) {
-//         if (value > 0) {
-//             arr.push({ name: key, y: value });
-//         }
-//     })
-//     return arr;
-// }
-
-// var generatedData = function() {
-//     var temp = bgp.generatedTopics;
-//     var arr = [];
-//     $.each(temp, function(key, value) {
-//         if (value > 0) {
-//             arr.push({ name: key, y: value });
-//         }
-//     })
-//     return arr;
-// }
+console.log(Object.keys(userTopics).length);
 
 var removeUnderscore = function(string) {
     return string.replace(/_/g, ' ');
 }
 
-// return {1st-level topic1: count1, 2nd-level topic: count2}
 var parseFirstLevelTopic = function(datatype) {
     var arr = {};
     var keyword = "";
@@ -162,23 +140,14 @@ var getSeries = function(datatype) {
 }
 
 var getDrilldown = function(datatype) {
-    // 最外层的drilldown
     var arr = [];
-    // data容器，用前记得先清零
     var data = [];
     var data2 = [];
     if (datatype == "user") {
-        // second level
-        console.log("HELLO!");
-        console.log(parseFirstLevelTopic(userTopics));
         $.each(parseFirstLevelTopic(userTopics), function(key, value) {
             data = [];
-            console.log(parseSecondLevelTopic(key, userTopics));
             $.each(parseSecondLevelTopic(key, userTopics), function(k, v) {
-                console.log(k, v);
                 data.push({ name: removeUnderscore(k), y: v, drilldown: key + "-" + k });
-                console.log(data);
-                // third level
                 data2 = [];
                 console.log(parseThirdLevelTopic(key + "-" + k, userTopics));
                 $.each(parseThirdLevelTopic(key + "-" + k, userTopics), function(kk, vv) {
@@ -189,12 +158,10 @@ var getDrilldown = function(datatype) {
             arr.push({ id: key, name: removeUnderscore(key), data: data });
         });
     } else if (datatype == "generated") {
-        // second level
         $.each(parseFirstLevelTopic(generatedTopics), function(key, value) {
             data = [];
             $.each(parseSecondLevelTopic(key, generatedTopics), function(k, v) {
                 data.push({ name: removeUnderscore(k), y: v, drilldown: key + "-" + k });
-                // third level
                 data2 = [];
                 $.each(parseThirdLevelTopic(key + "-" + k, generatedTopics), function(kk, vv) {
                     data2.push({ name: removeUnderscore(kk), y: vv });
@@ -241,7 +208,7 @@ var generateddata = {
         type: 'pie'
     },
     title: {
-        text: "topic distribution of your queries."
+        text: "topic distribution of generated queries."
     },
     subtitle: {
         text: 'Click the slices to view sub-topics.'
@@ -267,13 +234,10 @@ var generateddata = {
 $(function() {
     $("#start-date").html(store.get('popupSettings').date.slice(0, 10));
     $("#user-id").html(store.get('popupSettings').uuid);
-    // if (userData().length > 0) {
-    // var chart1 = Highcharts.chart('container', Highcharts.merge(test1, theme));
-    // var chart2 = Highcharts.chart('container2', Highcharts.merge(test1, theme));
-    var chart1 = Highcharts.chart('container', Highcharts.merge(userdata, theme));
-    var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddata, theme));
-    // var chart2 = Highcharts.chart('container2', test1);
-    // } else {
-    //     alert("Make your first google search with Hide & Seek before checking reports!")
-    // }
+    if (Object.keys(userTopics).length > 0) {
+        var chart1 = Highcharts.chart('container', Highcharts.merge(userdata, theme));
+        var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddata, theme));
+    } else {
+        alert("Make your first google search with Hide & Seek before checking reports!")
+    }
 });
