@@ -131,8 +131,6 @@ var addTopic = function(topicCollection, topic) {
 }
 
 saveTopics();
-console.log(store.get('userTopics')["Arts"]);
-console.log(store.get('generatedTopics')["Arts"]);
 
 // part 3: save topic history, for popup.html
 var last_user_topic = store.get('lut') || undefined;
@@ -235,22 +233,18 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
+                        console.log(jsons);
                         last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
-                                console.log("Submitted topic is: " + value);
                                 last_user_topic = value;
-                                // userTopics[value] += 1;
                                 addTopic(userTopics, value);
-                                // saveTopics();
                                 console.log(store.get('userTopics')[value]);
                             } else if (key == "notopic") {
                                 keywordsPools = keywordsPools.concat(value);
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
-                                console.log("&&&Topic: " + value);
                                 last_generated_topics.push(value);
-                                // generatedTopics[value] += 1;
                                 addTopic(generatedTopics, value);
                                 console.log(store.get('generatedTopics')[value]);
                             }

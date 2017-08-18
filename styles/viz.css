@@ -21,8 +21,24 @@ body {
 }
 
 button {
-    height: 10px;
-    width: 100px;
+    border: none;
+    padding: 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    margin: 4px 2px;
+    font-family: 'Acme', "Times New Roman";
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    background-color: #f7f5f1;
+    color: black;
+    border: 2px solid #e7e7e7;
+}
+
+button:hover {
+    background-color: #e7e7e7;
 }
 
 .container {
@@ -39,7 +55,6 @@ button {
     height: 20px;
     font-family: 'Acme', "Times New Roman";
     font-size: 20px;
-    /* text-align: center; */
     color: gray;
 }
 

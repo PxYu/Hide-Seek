@@ -327,12 +327,12 @@ $(function() {
     var count = 0;
     $("button").click(function() {
         if (count % 2 == 0) {
-            console.log("hello");
+            $("button").html("View Pie Chart");
             var chart1 = Highcharts.chart('container', Highcharts.merge(userdatacolumn, theme));
             var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatacolumn, theme));
             count += 1;
         } else {
-            console.log("hello2");
+            $("button").html("View Column Chart");
             var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
             var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
             count += 1;
