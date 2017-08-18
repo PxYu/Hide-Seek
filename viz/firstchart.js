@@ -232,10 +232,19 @@ var userdatacolumn = {
         text: "topic distribution of your queries."
     },
     subtitle: {
-        text: 'Click the slices to view sub-topics.'
+        text: 'Click the columns to view sub-topics.'
     },
     xAxis: {
-        type: 'category'
+        type: 'category',
+        title: {
+            text: 'NAME OF TOPIC(S)'
+        }
+    },
+    yAxis: {
+        allowDecimals: false,
+        title: {
+            text: 'number of time(s)'
+        }
     },
     plotOptions: {
         series: {
@@ -291,10 +300,19 @@ var generateddatacolumn = {
         text: "topic distribution of generated queries."
     },
     subtitle: {
-        text: 'Click the slices to view sub-topics.'
+        text: 'Click the columns to view sub-topics.'
     },
     xAxis: {
-        type: 'category'
+        type: 'category',
+        title: {
+            text: 'NAME OF TOPIC(S)'
+        }
+    },
+    yAxis: {
+        allowDecimals: false,
+        title: {
+            text: 'number of time(s)'
+        }
     },
     plotOptions: {
         series: {
