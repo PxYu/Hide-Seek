@@ -129,13 +129,24 @@ var getSeries = function(datatype) {
             console.log(key, value);
             data.push({ name: removeUnderscore(key), y: value, drilldown: key });
         })
-        arr.push({ id: "toplevel", name: "Top-level Topics", data: data });
+        arr.push({ id: "toplevel", colorByPoint: true, name: "Top-level Topics", data: data });
     } else if (datatype == "generated") {
         $.each(parseFirstLevelTopic(generatedTopics), function(key, value) {
             data.push({ name: removeUnderscore(key), y: value, drilldown: key });
         })
-        arr.push({ id: "toplevel", name: "Top-level Topics", data: data });
+        arr.push({ id: "toplevel", colorByPoint: true, name: "Top-level Topics", data: data });
     }
+    //sort the data
+    arr.forEach(function(name) {
+        name.data.sort(function(a, b) {
+            if (a.y < b.y) {
+                return 1;
+            } else if (a.y > b.y) {
+                return -1;
+            }
+            return 0;
+        });
+    });
     return arr;
 }
 
@@ -153,9 +164,9 @@ var getDrilldown = function(datatype) {
                 $.each(parseThirdLevelTopic(key + "-" + k, userTopics), function(kk, vv) {
                     data2.push({ name: removeUnderscore(kk), y: vv });
                 })
-                arr.push({ id: key + "-" + k, name: removeUnderscore(k), data: data2 });
+                arr.push({ id: key + "-" + k, colorByPoint: true, name: removeUnderscore(k), data: data2 });
             })
-            arr.push({ id: key, name: removeUnderscore(key), data: data });
+            arr.push({ id: key, colorByPoint: true, name: removeUnderscore(key), data: data });
         });
     } else if (datatype == "generated") {
         $.each(parseFirstLevelTopic(generatedTopics), function(key, value) {
@@ -166,16 +177,26 @@ var getDrilldown = function(datatype) {
                 $.each(parseThirdLevelTopic(key + "-" + k, generatedTopics), function(kk, vv) {
                     data2.push({ name: removeUnderscore(kk), y: vv });
                 })
-                arr.push({ id: key + "-" + k, name: removeUnderscore(k), data: data2 });
+                arr.push({ id: key + "-" + k, colorByPoint: true, name: removeUnderscore(k), data: data2 });
             })
-            arr.push({ id: key, name: removeUnderscore(key), data: data });
+            arr.push({ id: key, colorByPoint: true, name: removeUnderscore(key), data: data });
         });
     }
-    console.log(arr);
+    //sort the data
+    arr.forEach(function(name) {
+        name.data.sort(function(a, b) {
+            if (a.y < b.y) {
+                return 1;
+            } else if (a.y > b.y) {
+                return -1;
+            }
+            return 0;
+        });
+    });
     return arr;
 }
 
-var userdata = {
+var userdatapie = {
     chart: {
         type: 'pie'
     },
@@ -203,7 +224,38 @@ var userdata = {
     }
 }
 
-var generateddata = {
+var userdatacolumn = {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: "topic distribution of your queries."
+    },
+    subtitle: {
+        text: 'Click the slices to view sub-topics.'
+    },
+    xAxis: {
+        type: 'category'
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                enabled: true,
+                format: '{point.y}'
+            }
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> time(s)<br/>'
+    },
+    series: getSeries("user"),
+    drilldown: {
+        series: getDrilldown("user")
+    }
+}
+
+var generateddatapie = {
     chart: {
         type: 'pie'
     },
@@ -231,13 +283,59 @@ var generateddata = {
     }
 }
 
+var generateddatacolumn = {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: "topic distribution of generated queries."
+    },
+    subtitle: {
+        text: 'Click the slices to view sub-topics.'
+    },
+    xAxis: {
+        type: 'category'
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                enabled: true,
+                format: '{point.y}'
+            }
+        }
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> time(s)<br/>'
+    },
+    series: getSeries("generated"),
+    drilldown: {
+        series: getDrilldown("generated")
+    }
+}
+
 $(function() {
     $("#start-date").html(store.get('popupSettings').date.slice(0, 10));
     $("#user-id").html(store.get('popupSettings').uuid);
     if (Object.keys(userTopics).length > 0) {
-        var chart1 = Highcharts.chart('container', Highcharts.merge(userdata, theme));
-        var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddata, theme));
+        var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
+        var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
     } else {
         alert("Make your first google search with Hide & Seek before checking reports!")
+        $("button").hide();
     }
+    var count = 0;
+    $("button").click(function() {
+        if (count % 2 == 0) {
+            console.log("hello");
+            var chart1 = Highcharts.chart('container', Highcharts.merge(userdatacolumn, theme));
+            var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatacolumn, theme));
+            count += 1;
+        } else {
+            console.log("hello2");
+            var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
+            var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
+            count += 1;
+        }
+    })
 });
