@@ -8,6 +8,28 @@ function generateUUID() {
     return uuid;
 };
 
+//handle message
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.action == 'A') {
+        $.ajax({
+            type: request.method,
+            url: request.url,
+            async: true
+        }).done(function(message, text, jqXHR) {
+            var type = jqXHR.getResponseHeader('Content-Type').split(";")[0];
+            console.log(type);
+            if (type == "text/html") {
+                sendResponse({ status: "YES" });
+            } else {
+                console.log("%%%%%%%% Cannot open %%%%%%%% ");
+                console.log("%%%%%%%% Because: " + type + "%%%%%%%%");
+                sendResponse({ status: "NO" });
+            }
+        })
+    }
+    return true;
+})
 
 /**
  * handling method

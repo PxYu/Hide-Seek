@@ -54,18 +54,29 @@ $(function() {
                  */
                 if (result && result.simulate) {
                     console.log('模拟搜索处理，自动点击');
-                    // var alist = $('#res .g .r a');
-                    // var idx = Math.floor(Math.random() * alist.length);
+                    var alist = $('#res .g .r a');
+                    var idx = Math.floor(Math.random() * alist.length);
                     // if (!alist[idx].href.endsWith('.pdf')) {
                     //     console.log(alist[idx]);
                     //     alist[idx].click();
                     // }
-                    var rlist = $("#res .g .r");
-                    var idx = Math.floor(Math.random() * rlist.length);
-                    // insert checking (!!! does not work, don't know why)
-                    if (rlist[idx].childElementCount < 2) {
-                        rlist[idx].firstElementChild.click();
-                    }
+                    chrome.runtime.sendMessage({
+                        method: 'HEAD',
+                        action: 'A',
+                        url: alist[idx].href,
+                    }, function(response) {
+                        //alert(responseText);
+                        console.log(response.status);
+                        if (response.status == "YES") {
+                            alist[idx].click();
+                        }
+                    });
+                    // var rlist = $("#res .g .r");
+                    // var idx = Math.floor(Math.random() * rlist.length);
+                    // // insert checking (!!! does not work, don't know why)
+                    // if (rlist[idx].childElementCount < 2) {
+                    //     rlist[idx].firstElementChild.click();
+                    // }
                 }
             });
         }
