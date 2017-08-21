@@ -1,11 +1,5 @@
 'use strict';
 
-var h = $("#concontainerer").height();
-var w = $("#concontainerer").width() * 0.5;
-
-console.log(h);
-console.log(w);
-
 //extra css style
 Highcharts.createElement('link', {
     href: 'https://fonts.googleapis.com/css?family=Dosis:400,600',
@@ -342,68 +336,95 @@ var generateddatacolumn = {
     }
 }
 
+var text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean bibendum erat ac justo sollicitudin, quis lacinia ligula fringilla. Pellentesque hendrerit, nisi vitae posuere condimentum, lectus urna accumsan libero, rutrum commodo mi lacus pretium erat. Phasellus pretium ultrices mi sed semper. Praesent ut tristique magna. Donec nisl tellus, sagittis ut tempus sit amet, consectetur eget erat. Sed ornare gravida lacinia. Curabitur iaculis metus purus, eget pretium est laoreet ut. Quisque tristique augue ac eros malesuada, vitae facilisis mauris sollicitudin. Mauris ac molestie nulla, vitae facilisis quam. Curabitur placerat ornare sem, in mattis purus posuere eget. Praesent non condimentum odio. Nunc aliquet, odio nec auctor congue, sapien justo dictum massa, nec fermentum massa sapien non tellus. Praesent luctus eros et nunc pretium hendrerit. In consequat et eros nec interdum. Ut neque dui, maximus id elit ac, consequat pretium tellus. Nullam vel accumsan lorem.';
+
+var parseWordCloudData = function(text) {
+    return text
+        .split(',').join('') // remove commas
+        .split('.').join('') // remove periods
+        .split(' ') // split into words
+        .reduce(function(arr, word) {
+            var obj = arr.find(function(obj) {
+                return obj.name === word;
+            });
+            if (obj) {
+                obj.weight += 1;
+            } else {
+                obj = {
+                    name: word,
+                    weight: 1
+                };
+                arr.push(obj);
+            }
+            return arr;
+        }, []);
+}
+
+var drawWordCloud = function() {
+    var h = $("#concontainerer").height();
+    var w = $("#concontainerer").width() * 0.5;
+    var wc1 = {
+        chart: {
+            width: w,
+            height: h
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+            pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
+        },
+        series: [{
+            name: "WORD CLOUD",
+            type: 'wordcloud',
+            data: parseWordCloudData(text)
+        }],
+        title: {
+            text: 'Wordcloud of Lorem Ipsum'
+        }
+    };
+    var wc2 = {
+        chart: {
+            width: w,
+            height: h
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+            pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
+        },
+        series: [{
+            name: "WORD CLOUD",
+            type: 'wordcloud',
+            data: parseWordCloudData(text)
+        }],
+        title: {
+            text: 'Wordcloud of Lorem Ipsum'
+        }
+    };
+    Highcharts.chart('container', Highcharts.merge(wc1, theme));
+    Highcharts.chart('container2', Highcharts.merge(wc2, theme));
+}
+
 $("#tabTopic").click(function(evt) {
+    $("#button").show();
+    // tab action
     var tablinks = $(".tablinks");
     for (var i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
     evt.currentTarget.className += " active";
-    var chart1 = Highcharts.chart('container', Highcharts.merge(userdatacolumn, theme));
-    var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatacolumn, theme));
+    var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
+    var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
 })
 
 $("#tabWordCloud").click(function(evt) {
+    $("#button").hide();
+    // tab action
     var tablinks = $(".tablinks");
     for (var i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
     evt.currentTarget.className += " active";
-    //word cloud data
-    (function(H) {
-        var text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean bibendum erat ac justo sollicitudin, quis lacinia ligula fringilla. Pellentesque hendrerit, nisi vitae posuere condimentum, lectus urna accumsan libero, rutrum commodo mi lacus pretium erat. Phasellus pretium ultrices mi sed semper. Praesent ut tristique magna. Donec nisl tellus, sagittis ut tempus sit amet, consectetur eget erat. Sed ornare gravida lacinia. Curabitur iaculis metus purus, eget pretium est laoreet ut. Quisque tristique augue ac eros malesuada, vitae facilisis mauris sollicitudin. Mauris ac molestie nulla, vitae facilisis quam. Curabitur placerat ornare sem, in mattis purus posuere eget. Praesent non condimentum odio. Nunc aliquet, odio nec auctor congue, sapien justo dictum massa, nec fermentum massa sapien non tellus. Praesent luctus eros et nunc pretium hendrerit. In consequat et eros nec interdum. Ut neque dui, maximus id elit ac, consequat pretium tellus. Nullam vel accumsan lorem.';
-        var data = text
-            .split(',').join('') // remove commas
-            .split('.').join('') // remove periods
-            .split(' ') // split into words
-            .reduce(function(arr, word) {
-                var obj = arr.find(function(obj) {
-                    return obj.name === word;
-                });
-                if (obj) {
-                    obj.weight += 1;
-                } else {
-                    obj = {
-                        name: word,
-                        weight: 1
-                    };
-                    arr.push(obj);
-                }
-                return arr;
-            }, []);
 
-        console.log(data);
-
-        var wordcloudsetup = {
-            chart: {
-                width: w,
-                height: h
-            },
-            tooltip: {
-                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-                pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
-            },
-            series: [{
-                name: "WORD CLOUD",
-                type: 'wordcloud',
-                data: data
-            }],
-            title: {
-                text: 'Wordcloud of Lorem Ipsum'
-            }
-        };
-        H.chart('container', Highcharts.merge(wordcloudsetup, theme));
-        H.chart('container2', Highcharts.merge(wordcloudsetup, theme));
-    }(Highcharts));
+    drawWordCloud();
 })
 
 $(function() {
@@ -420,12 +441,12 @@ $(function() {
     var count = 0;
     $("#button").click(function() {
         if (count % 2 == 0) {
-            $("button").html("View Pie Chart");
+            $("#button").html("View Pie Chart");
             var chart1 = Highcharts.chart('container', Highcharts.merge(userdatacolumn, theme));
             var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatacolumn, theme));
             count += 1;
         } else {
-            $("button").html("View Column Chart");
+            $("#button").html("View Column Chart");
             var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
             var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
             count += 1;
