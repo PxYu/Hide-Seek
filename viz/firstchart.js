@@ -7,6 +7,9 @@ Highcharts.createElement('link', {
     type: 'text/css'
 }, null, document.getElementsByTagName('head')[0]);
 
+var h = $("#concontainerer").height();
+var w = $("#concontainerer").width() * 0.5;
+
 //theme of the topic demonstration
 var theme = Highcharts.theme = {
     colors: ['#7cb5ec', '#f7a35c', '#90ee7e', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee',
@@ -66,14 +69,21 @@ var theme = Highcharts.theme = {
     background2: '#F0F0EA'
 };
 
-
+var parseWordCloudData = function(jsons) {
+    var arr = [];
+    $.each(jsons, function(key, value) {
+        arr.push({ name: key, weight: value });
+    })
+    return arr;
+}
 
 var bgp = chrome.extension.getBackgroundPage();
 var userTopics = bgp.userTopics;
 var generatedTopics = bgp.generatedTopics;
-
-console.log(userTopics);
-console.log(Object.keys(userTopics).length);
+var userQuery = parseWordCloudData(bgp.userQueries);
+console.log(bgp.userQueries);
+console.log(userQuery);
+var generatedQuery = parseWordCloudData(bgp.generatedQueries);
 
 var removeUnderscore = function(string) {
     return string.replace(/_/g, ' ');
@@ -130,7 +140,6 @@ var getSeries = function(datatype) {
     var data = [];
     if (datatype == "user") {
         $.each(parseFirstLevelTopic(userTopics), function(key, value) {
-            console.log(key, value);
             data.push({ name: removeUnderscore(key), y: value, drilldown: key });
         })
         arr.push({ id: "toplevel", colorByPoint: true, name: "Top-level Topics", data: data });
@@ -336,74 +345,52 @@ var generateddatacolumn = {
     }
 }
 
-var userQuery = store.get("userQuery");
-var generatedQuery = store.get("generatedQuery");
+// var userQuery = store.get("userQuery");
+// var generatedQuery = store.get("generatedQuery");
 
-var parseWordCloudData = function(text) {
-    return text
-        .split(',').join('') // remove commas
-        .split('.').join('') // remove periods
-        .split(' ') // split into words
-        .reduce(function(arr, word) {
-            var obj = arr.find(function(obj) {
-                return obj.name === word;
-            });
-            if (obj) {
-                obj.weight += 1;
-            } else {
-                obj = {
-                    name: word,
-                    weight: 1
-                };
-                arr.push(obj);
-            }
-            return arr;
-        }, []);
-}
+var wc1 = {
+    chart: {
+        width: w,
+        height: h
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+        pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
+    },
+    series: [{
+        name: "WORD CLOUD",
+        type: 'wordcloud',
+        data: userQuery
+    }],
+    title: {
+        text: 'Wordcloud of Lorem Ipsum'
+    }
+};
+
+var wc2 = {
+    chart: {
+        width: w,
+        height: h
+    },
+    tooltip: {
+        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+        pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
+    },
+    series: [{
+        name: "WORD CLOUD",
+        type: 'wordcloud',
+        data: generatedQuery
+    }],
+    title: {
+        text: 'Wordcloud of Lorem Ipsum'
+    }
+};
 
 var drawWordCloud = function() {
-    var h = $("#concontainerer").height();
-    var w = $("#concontainerer").width() * 0.5;
-    var wc1 = {
-        chart: {
-            width: w,
-            height: h
-        },
-        tooltip: {
-            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-            pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
-        },
-        series: [{
-            name: "WORD CLOUD",
-            type: 'wordcloud',
-            data: parseWordCloudData(userQuery)
-        }],
-        title: {
-            text: 'Wordcloud of Lorem Ipsum'
-        }
-    };
-    var wc2 = {
-        chart: {
-            width: w,
-            height: h
-        },
-        tooltip: {
-            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-            pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
-        },
-        series: [{
-            name: "WORD CLOUD",
-            type: 'wordcloud',
-            data: parseWordCloudData(generatedQuery)
-        }],
-        title: {
-            text: 'Wordcloud of Lorem Ipsum'
-        }
-    };
+    console.log(new Date().getSeconds());
     Highcharts.chart('container', Highcharts.merge(wc1, theme));
     Highcharts.chart('container2', Highcharts.merge(wc2, theme));
-    // Highcharts.chart('container', wc1);
-    // Highcharts.chart('container2', wc2);
+    console.log(new Date().getSeconds());
 }
 
 $("#tabTopic").click(function(evt) {

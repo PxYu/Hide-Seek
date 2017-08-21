@@ -165,12 +165,25 @@ var saveLastTopics = function() {
 saveLastTopics();
 
 //part 4: save queries, for visualization.html
-var userQueries = store.get("userQuery") || " ";
-var generatedQueries = store.get("generatedQuery") || " ";
+var userQueries = store.get("userQuery") || {};
+var generatedQueries = store.get("generatedQuery") || {};
 
 var saveQueries = function() {
     store.set("userQuery", userQueries);
     store.set("generatedQuery", generatedQueries);
+}
+
+var addQuery = function(queryCollection, query) {
+    var splits = query.split(" ");
+    $.each(splits, function(index, value) {
+        console.log(value);
+        if (queryCollection.hasOwnProperty(value)) {
+            queryCollection[value] += 1;
+        } else {
+            queryCollection[value] = 1;
+        }
+    })
+    saveQueries();
 }
 
 saveQueries();
@@ -273,15 +286,18 @@ requestHandlers.handle_search = function(data, callback, sender) {
                                 last_user_topic = value;
                                 addTopic(userTopics, value);
                                 //write input
-                                userQueries += q.replace(/[^A-Za-z0-9]/g, ' ') + ' ';
+                                // userQueries += q.replace(/[^A-Za-z0-9]/g, ' ') + ' ';
+                                addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
                             } else if (key == "notopic") {
                                 keywordsPools = keywordsPools.concat(value);
-                                generatedQueries += value + ' ';
+                                addQuery(generatedQueries, value);
+                                // generatedQueries += value + ' ';
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 last_generated_topics.push(value);
                                 addTopic(generatedTopics, value);
-                                generatedQueries += key + ' ';
+                                addQuery(generatedQueries, key);
+                                // generatedQueries += key + ' ';
                             }
                         })
                         saveTopics();
