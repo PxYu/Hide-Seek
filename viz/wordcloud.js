@@ -225,8 +225,9 @@
              * @return {number} Returns the resulting fontSize of a word.
              */
             deriveFontSize: function deriveFontSize(relativeWeight) {
-                var maxFontSize = 25;
-                return Math.floor(maxFontSize * relativeWeight);
+                var maxFontSize = 40;
+                return Math.max(maxFontSize * relativeWeight, 10);
+
             },
             drawPoints: function() {
                 var series = this,

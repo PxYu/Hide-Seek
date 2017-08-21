@@ -336,7 +336,8 @@ var generateddatacolumn = {
     }
 }
 
-var text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean bibendum erat ac justo sollicitudin, quis lacinia ligula fringilla. Pellentesque hendrerit, nisi vitae posuere condimentum, lectus urna accumsan libero, rutrum commodo mi lacus pretium erat. Phasellus pretium ultrices mi sed semper. Praesent ut tristique magna. Donec nisl tellus, sagittis ut tempus sit amet, consectetur eget erat. Sed ornare gravida lacinia. Curabitur iaculis metus purus, eget pretium est laoreet ut. Quisque tristique augue ac eros malesuada, vitae facilisis mauris sollicitudin. Mauris ac molestie nulla, vitae facilisis quam. Curabitur placerat ornare sem, in mattis purus posuere eget. Praesent non condimentum odio. Nunc aliquet, odio nec auctor congue, sapien justo dictum massa, nec fermentum massa sapien non tellus. Praesent luctus eros et nunc pretium hendrerit. In consequat et eros nec interdum. Ut neque dui, maximus id elit ac, consequat pretium tellus. Nullam vel accumsan lorem.';
+var userQuery = store.get("userQuery");
+var generatedQuery = store.get("generatedQuery");
 
 var parseWordCloudData = function(text) {
     return text
@@ -375,7 +376,7 @@ var drawWordCloud = function() {
         series: [{
             name: "WORD CLOUD",
             type: 'wordcloud',
-            data: parseWordCloudData(text)
+            data: parseWordCloudData(userQuery)
         }],
         title: {
             text: 'Wordcloud of Lorem Ipsum'
@@ -393,7 +394,7 @@ var drawWordCloud = function() {
         series: [{
             name: "WORD CLOUD",
             type: 'wordcloud',
-            data: parseWordCloudData(text)
+            data: parseWordCloudData(generatedQuery)
         }],
         title: {
             text: 'Wordcloud of Lorem Ipsum'
@@ -401,6 +402,8 @@ var drawWordCloud = function() {
     };
     Highcharts.chart('container', Highcharts.merge(wc1, theme));
     Highcharts.chart('container2', Highcharts.merge(wc2, theme));
+    // Highcharts.chart('container', wc1);
+    // Highcharts.chart('container2', wc2);
 }
 
 $("#tabTopic").click(function(evt) {

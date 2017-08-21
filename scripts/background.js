@@ -164,6 +164,17 @@ var saveLastTopics = function() {
 
 saveLastTopics();
 
+//part 4: save queries, for visualization.html
+var userQueries = store.get("userQuery") || " ";
+var generatedQueries = store.get("generatedQuery") || " ";
+
+var saveQueries = function() {
+    store.set("userQuery", userQueries);
+    store.set("generatedQuery", generatedQueries);
+}
+
+saveQueries();
+
 /**
  * simulating searches
  */
@@ -258,20 +269,24 @@ requestHandlers.handle_search = function(data, callback, sender) {
                         last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
+                                //write input topic
                                 last_user_topic = value;
                                 addTopic(userTopics, value);
-                                console.log(store.get('userTopics')[value]);
+                                //write input
+                                userQueries += q.replace(/[^A-Za-z0-9]/g, ' ') + ' ';
                             } else if (key == "notopic") {
                                 keywordsPools = keywordsPools.concat(value);
+                                generatedQueries += value + ' ';
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 last_generated_topics.push(value);
                                 addTopic(generatedTopics, value);
-                                console.log(store.get('generatedTopics')[value]);
+                                generatedQueries += key + ' ';
                             }
                         })
                         saveTopics();
                         saveLastTopics();
+                        saveQueries();
                     }
                 }
             });
