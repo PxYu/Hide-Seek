@@ -5,6 +5,7 @@
     <script src="Highcharts-5.0.14/code/highcharts.js"></script>
     <script src="Highcharts-5.0.14/code/highcharts-3d.js"></script>
     <script src="Highcharts-5.0.14/code/modules/drilldown.js"></script>
+    <script src="viz/wordcloud.js"></script>
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/store-js/store.js"></script>
     <link rel="stylesheet" href="styles/fonts.css">
@@ -23,11 +24,20 @@
             <span class="subtitle-data" id="user-id"></span>
         </div>
     </div>
+
+    <div class="tab">
+        <button class="tablinks" id="tabTopic">Topic</button>
+        <button class="tablinks" id="tabWordCloud">Word Cloud</button>
+        <!-- <button class="tablinks" onclick="visualize(evt, 'Session')">Session</button> -->
+    </div>
+
     <div id="concontainerer">
         <div id="container" class="container"></div>
         <div id="container2" class="container"></div>
     </div>
-    <div id="wrapper"><button type="button" id="button">View Column Chart</button></div>
+    <div id="wrapper">
+        <button type="button" id="button">View Column Chart</button>
+    </div>
     <script src="viz/firstchart.js"></script>
 
     <footer>

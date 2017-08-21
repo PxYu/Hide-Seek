@@ -1,11 +1,19 @@
 'use strict';
 
+var h = $("#concontainerer").height();
+var w = $("#concontainerer").width() * 0.5;
+
+console.log(h);
+console.log(w);
+
+//extra css style
 Highcharts.createElement('link', {
     href: 'https://fonts.googleapis.com/css?family=Dosis:400,600',
     rel: 'stylesheet',
     type: 'text/css'
 }, null, document.getElementsByTagName('head')[0]);
 
+//theme of the topic demonstration
 var theme = Highcharts.theme = {
     colors: ['#7cb5ec', '#f7a35c', '#90ee7e', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee',
         '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
@@ -63,6 +71,8 @@ var theme = Highcharts.theme = {
     // General
     background2: '#F0F0EA'
 };
+
+
 
 var bgp = chrome.extension.getBackgroundPage();
 var userTopics = bgp.userTopics;
@@ -160,7 +170,7 @@ var getDrilldown = function(datatype) {
             $.each(parseSecondLevelTopic(key, userTopics), function(k, v) {
                 data.push({ name: removeUnderscore(k), y: v, drilldown: key + "-" + k });
                 data2 = [];
-                console.log(parseThirdLevelTopic(key + "-" + k, userTopics));
+                // console.log(parseThirdLevelTopic(key + "-" + k, userTopics));
                 $.each(parseThirdLevelTopic(key + "-" + k, userTopics), function(kk, vv) {
                     data2.push({ name: removeUnderscore(kk), y: vv });
                 })
@@ -332,18 +342,83 @@ var generateddatacolumn = {
     }
 }
 
+$("#tabTopic").click(function(evt) {
+    var tablinks = $(".tablinks");
+    for (var i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    evt.currentTarget.className += " active";
+    var chart1 = Highcharts.chart('container', Highcharts.merge(userdatacolumn, theme));
+    var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatacolumn, theme));
+})
+
+$("#tabWordCloud").click(function(evt) {
+    var tablinks = $(".tablinks");
+    for (var i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    evt.currentTarget.className += " active";
+    //word cloud data
+    (function(H) {
+        var text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean bibendum erat ac justo sollicitudin, quis lacinia ligula fringilla. Pellentesque hendrerit, nisi vitae posuere condimentum, lectus urna accumsan libero, rutrum commodo mi lacus pretium erat. Phasellus pretium ultrices mi sed semper. Praesent ut tristique magna. Donec nisl tellus, sagittis ut tempus sit amet, consectetur eget erat. Sed ornare gravida lacinia. Curabitur iaculis metus purus, eget pretium est laoreet ut. Quisque tristique augue ac eros malesuada, vitae facilisis mauris sollicitudin. Mauris ac molestie nulla, vitae facilisis quam. Curabitur placerat ornare sem, in mattis purus posuere eget. Praesent non condimentum odio. Nunc aliquet, odio nec auctor congue, sapien justo dictum massa, nec fermentum massa sapien non tellus. Praesent luctus eros et nunc pretium hendrerit. In consequat et eros nec interdum. Ut neque dui, maximus id elit ac, consequat pretium tellus. Nullam vel accumsan lorem.';
+        var data = text
+            .split(',').join('') // remove commas
+            .split('.').join('') // remove periods
+            .split(' ') // split into words
+            .reduce(function(arr, word) {
+                var obj = arr.find(function(obj) {
+                    return obj.name === word;
+                });
+                if (obj) {
+                    obj.weight += 1;
+                } else {
+                    obj = {
+                        name: word,
+                        weight: 1
+                    };
+                    arr.push(obj);
+                }
+                return arr;
+            }, []);
+
+        console.log(data);
+
+        var wordcloudsetup = {
+            chart: {
+                width: w,
+                height: h
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
+            },
+            series: [{
+                name: "WORD CLOUD",
+                type: 'wordcloud',
+                data: data
+            }],
+            title: {
+                text: 'Wordcloud of Lorem Ipsum'
+            }
+        };
+        H.chart('container', Highcharts.merge(wordcloudsetup, theme));
+        H.chart('container2', Highcharts.merge(wordcloudsetup, theme));
+    }(Highcharts));
+})
+
 $(function() {
     $("#start-date").html(store.get('popupSettings').date.slice(0, 10));
     $("#user-id").html(store.get('popupSettings').uuid);
     if (Object.keys(userTopics).length > 0) {
-        var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
-        var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
+        $("#tabTopic").click();
+        //var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
+        //var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
     } else {
         alert("Make your first google search with Hide & Seek before checking reports!")
         $("button").hide();
     }
     var count = 0;
-    $("button").click(function() {
+    $("#button").click(function() {
         if (count % 2 == 0) {
             $("button").html("View Pie Chart");
             var chart1 = Highcharts.chart('container', Highcharts.merge(userdatacolumn, theme));
