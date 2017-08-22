@@ -72,6 +72,17 @@ var requestHandlers = {
                 callback({ success: false });
             }
         });
+    },
+    query_generator: function(data, callback, sender) {
+        $.ajax({
+            type: 'POST',
+            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + data.keyword + '&click=0&url=' + data.url + '&content=' + data.title + '&id=' + popupSettings.uuid),
+            success: function(status) {
+                if (status && status.length) {
+                    console.log("@@@@@ user click post success! @@@@@");
+                }
+            }
+        })
     }
 }
 
@@ -268,6 +279,8 @@ requestHandlers.handle_search = function(data, callback, sender) {
     var q = data.q;
     if (simulateTab && simulateTab.id === sender.tab.id) {
         return callback({ simulate: true });
+    } else {
+        callback({ simulate: false });
     }
     if (lastSearch != q) {
         lastSearch = q;

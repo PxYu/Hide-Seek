@@ -77,6 +77,25 @@ $(function() {
                     // if (rlist[idx].childElementCount < 2) {
                     //     rlist[idx].firstElementChild.click();
                     // }
+                } else {
+                    $('#res a').click(function() {
+                        var self = $(this);
+                        var url = self.attr('href');
+                        console.log('=======', url);
+
+                        if (url.indexOf('/url?') == 0) {
+                            url = decodeURIComponent(getQueryString(url, 'url'));
+                        }
+                        var title = self.text();
+                        var keyword = $('#lst-ib').val();
+
+                        chrome.extension.sendRequest({
+                            handler: 'query_generator',
+                            url: url,
+                            title: title,
+                            keyword: keyword
+                        });
+                    });
                 }
             });
         }
