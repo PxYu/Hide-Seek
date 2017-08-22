@@ -78,6 +78,17 @@ $(function() {
                     //     rlist[idx].firstElementChild.click();
                     // }
                 } else {
+                    // console.log("HIIIIII");
+                    // $('div._NId').hide();
+                    // // $('div.srg').hide();
+                    // setTimeout(function() {
+                    //     var items = $("div.srg div.g").toArray();
+                    //     items.reverse();
+                    //     $.each(items, function() {
+                    //         $("div.srg").append(this);
+                    //     })
+                    //     $('div._NId').show();
+                    // }, 2 * 1000)
                     $('#res a').click(function() {
                         var self = $(this);
                         var url = self.attr('href');
