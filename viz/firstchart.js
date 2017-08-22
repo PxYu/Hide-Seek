@@ -10,6 +10,9 @@ Highcharts.createElement('link', {
 var h = $("#concontainerer").height();
 var w = $("#concontainerer").width() * 0.5;
 
+// var d3 = require("d3"),
+//     cloud = require("../");
+
 //theme of the topic demonstration
 var theme = Highcharts.theme = {
     colors: ['#7cb5ec', '#f7a35c', '#90ee7e', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee',
@@ -363,7 +366,7 @@ var wc1 = {
         data: userQuery
     }],
     title: {
-        text: 'Wordcloud of Lorem Ipsum'
+        text: 'Word cloud for your queries.'
     }
 };
 
@@ -382,7 +385,7 @@ var wc2 = {
         data: generatedQuery
     }],
     title: {
-        text: 'Wordcloud of Lorem Ipsum'
+        text: 'Word cloud for generated queries.'
     }
 };
 
@@ -390,7 +393,6 @@ var drawWordCloud = function() {
     console.log(new Date().getSeconds());
     Highcharts.chart('container', Highcharts.merge(wc1, theme));
     Highcharts.chart('container2', Highcharts.merge(wc2, theme));
-    console.log(new Date().getSeconds());
 }
 
 $("#tabTopic").click(function(evt) {
@@ -421,6 +423,7 @@ $(function() {
     $("#start-date").html(store.get('popupSettings').date.slice(0, 10));
     $("#user-id").html(store.get('popupSettings').uuid);
     if (Object.keys(userTopics).length > 0) {
+        // $("#tabWordCloud").click();
         $("#tabTopic").click();
         //var chart1 = Highcharts.chart('container', Highcharts.merge(userdatapie, theme));
         //var chart2 = Highcharts.chart('container2', Highcharts.merge(generateddatapie, theme));
