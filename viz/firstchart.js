@@ -7,7 +7,7 @@ Highcharts.createElement('link', {
     type: 'text/css'
 }, null, document.getElementsByTagName('head')[0]);
 
-var h = $("#concontainerer").height();
+// var h = $("#concontainerer").height();
 var w = $("#concontainerer").width() * 0.5;
 
 var chart1 = undefined;
@@ -362,17 +362,14 @@ var generateddatacolumn = {
 var wc1 = {
     chart: {
         width: w,
-        height: h,
-        events: {
-            load: function() {}
-        }
+        height: 0.75 * w
     },
     tooltip: {
         headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
         pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
     },
     series: [{
-        name: "WORD CLOUD",
+        name: "Word Cloud",
         type: 'wordcloud',
         data: userQuery
     }],
@@ -384,11 +381,10 @@ var wc1 = {
 var wc2 = {
     chart: {
         width: w,
-        height: h,
+        height: 0.75 * w,
         events: {
             load: function() {
                 //stop loading animation
-                console.log("<<<<<");
                 $("#container3").hide();
             }
         }
@@ -398,7 +394,7 @@ var wc2 = {
         pointFormat: '{point.name}</span>: <b>{point.weight}</b> time(s)<br/>'
     },
     series: [{
-        name: "WORD CLOUD",
+        name: "Word Cloud",
         type: 'wordcloud',
         data: generatedQuery
     }],
@@ -415,10 +411,6 @@ var drawWordCloud = function() {
 }
 
 $("#tabTopic").click(function(evt) {
-    // if (chart1 != undefined) {
-    //     chart1.destroy();
-    //     chart2.destroy();
-    // }
     $("#button").show();
     // tab action
     var tablinks = $(".tablinks");

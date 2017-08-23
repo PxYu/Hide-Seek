@@ -40,6 +40,9 @@
     },
     "content_scripts": [{
         "all_frames": false,
+        "css": [
+            "styles/fonts.css"
+        ],
         "js": [
             "bower_components/jquery/dist/jquery.js",
             "scripts/content.js"
