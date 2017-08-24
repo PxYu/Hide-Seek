@@ -16,8 +16,7 @@ var generateUUID = function() {
 var rank = 0;
 var userRank = 0;
 
-//handle message
-
+// check url content type: for simulation random click
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.action == 'A') {
         $.ajax({
@@ -38,9 +37,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 })
 
-/**
- * handling method
- */
 var requestHandlers = {
     global_set_store: function(data, callback, sender) {
         store.set(data.key, data.value);
@@ -96,9 +92,6 @@ var requestHandlers = {
     }
 }
 
-/**
- * message passing
- */
 chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     requestHandlers[request.handler](request, sendResponse, sender);
 });
@@ -185,20 +178,15 @@ var addQuery = function(queryCollection, query) {
 
 saveQueries();
 
-/**
- * simulating searches
- */
+// simulate search
 var keywordsPools = [],
     simulateKeyword, simulateTab;
 var simulateSearch = function() {
     if (simulateTab) {
-        // return console.log('正在执行任务...');
         return;
     }
 
-    // console.log('keywordsPools', keywordsPools);
     if (!keywordsPools || !keywordsPools.length) {
-        // return console.log('没有执行任务...');
         return;
     }
 
@@ -210,11 +198,7 @@ var simulateSearch = function() {
         simulateTab = tab;
         setTimeout(function() {
             chrome.tabs.remove(tab.id, function() {
-                if (chrome.runtime.lastError) {
-                    // tab does not exist
-                } else {
-                    // tab exists
-                }
+                if (chrome.runtime.lastError) {} else {}
             });
             if (simulateTab && simulateTab.id === tab.id) {
                 simulateTab = undefined;
@@ -228,19 +212,19 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
         // if (simulateTab && simulateTab.id === tabId && title) {
         if (tab.url.indexOf('www.google.com') == -1) {
-            // console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
-            // console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
             $.ajax({
                 type: 'POST',
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=' + rank + '&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
                 success: function(status) {
                     if (status && status.length) {
-                        console.log("~~~~~ Post successful! ~~~~~")
+                        console.log("&&&&& Post successful! &&&&&")
                     }
                 }
             });
             try {
-                chrome.tabs.remove(tab.id);
+                chrome.tabs.remove(tab.id, function() {
+                    if (chrome.runtime.lastError) {} else {}
+                });
             } catch (e) {}
             if (simulateTab && simulateTab.id === tab.id) {
                 simulateTab = undefined;
@@ -257,16 +241,12 @@ setInterval(function() {
     simulateSearch();
 }, 5 * 1000);
 
-/**
- * 模拟搜索获取关键词
- */
+// simulate acquiring keywords
 requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
 }
 
-/**
- * search handling
- */
+// handle the search
 var lastSearch;
 requestHandlers.handle_search = function(data, callback, sender) {
     var q = data.q;
