@@ -85,7 +85,7 @@ $(function() {
                     //     $('div._NId').show();
                     // }, 2 * 1000)
 
-                    $('<input type="button" id="rerank" value="re-rank results">').insertAfter("nobr");
+                    $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
                     $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "red" });
                     $("#rerank").click(function() {
                         var items = $("div.srg div.g").toArray();

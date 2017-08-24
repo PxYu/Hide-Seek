@@ -1,4 +1,8 @@
-function generateUUID() {
+String.prototype.repeat = function(length) {
+    return Array(length + 1).join(this);
+};
+
+var generateUUID = function() {
     var d = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = (d + Math.random() * 16) % 16 | 0;
@@ -77,16 +81,18 @@ var requestHandlers = {
         });
     },
     query_generator: function(data, callback, sender) {
-        userRank = data.index + 1;
-        $.ajax({
-            type: 'POST',
-            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + data.keyword + '&click=' + userRank + '&url=' + data.url + '&content=' + data.title + '&id=' + popupSettings.uuid),
-            success: function(status) {
-                if (status && status.length) {
-                    console.log("@@@@@ user click post success! @@@@@");
+        if (popupSettings.started) {
+            userRank = data.index + 1;
+            $.ajax({
+                type: 'POST',
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + data.keyword + '&click=' + userRank + '&url=' + data.url + '&content=' + data.title + '&id=' + popupSettings.uuid),
+                success: function(status) {
+                    if (status && status.length) {
+                        console.log("@@@@@ user click post success! @@@@@");
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 }
 
@@ -112,9 +118,9 @@ var popupSettings = store.get('popupSettings') || {
 var savePopupSettings = function() {
     store.set('popupSettings', popupSettings);
     console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
-    console.log(store.get('popupSettings').started);
-    console.log(store.get('popupSettings').uuid);
-    console.log(store.get('popupSettings').date);
+    console.log("+ " + store.get('popupSettings').started + " ".repeat((40 - store.get('popupSettings').started.toString().length)) + "+");
+    console.log("+ " + store.get('popupSettings').uuid + " ".repeat(4) + "+");
+    console.log("+ " + store.get('popupSettings').date + " ".repeat(16) + "+");
     console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
 }
 
