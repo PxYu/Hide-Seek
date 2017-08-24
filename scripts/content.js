@@ -72,12 +72,6 @@ $(function() {
                             alist[idx].click();
                         }
                     });
-                    // var rlist = $("#res .g .r");
-                    // var idx = Math.floor(Math.random() * rlist.length);
-                    // // insert checking (!!! does not work, don't know why)
-                    // if (rlist[idx].childElementCount < 2) {
-                    //     rlist[idx].firstElementChild.click();
-                    // }
                 } else {
                     // console.log("HIIIIII");
                     // $('div._NId').hide();
@@ -101,27 +95,24 @@ $(function() {
                         })
                     })
 
-                    console.log($("#res .g .r a"));
-
                     var resultList = $("#res .g .r a");
-
+                    var hrefArray = [];
+                    $.each(resultList, function(index, value) {
+                        hrefArray.push(resultList[index].href);
+                    })
 
                     $('#res .g .r a').click(function() {
                         var self = $(this);
                         var url = self.attr('href');
-                        var cnt = 0;
-                        // $.each(resultList, function(index, value) {
-                        //     if (self == value) {
-                        //         alert(index);
-                        //         alert(cnt);
-                        //     }
-                        //     cnt++;
-                        // })
-                        console.log('=======', url);
-
                         if (url.indexOf('/url?') == 0) {
                             url = decodeURIComponent(getQueryString(url, 'url'));
                         }
+                        var i = 0;
+                        $.each(hrefArray, function(index, value) {
+                            if (hrefArray[index] == url) {
+                                i = index;
+                            }
+                        })
                         var title = self.text();
                         var keyword = $('#lst-ib').val();
 
@@ -129,7 +120,8 @@ $(function() {
                             handler: 'query_generator',
                             url: url,
                             title: title,
-                            keyword: keyword
+                            keyword: keyword,
+                            index: i
                         });
                     });
                 }

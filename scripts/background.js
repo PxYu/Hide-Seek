@@ -10,6 +10,7 @@ function generateUUID() {
 
 
 var rank = 0;
+var userRank = 0;
 
 //handle message
 
@@ -77,9 +78,10 @@ var requestHandlers = {
         });
     },
     query_generator: function(data, callback, sender) {
+        userRank = data.index + 1;
         $.ajax({
             type: 'POST',
-            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + data.keyword + '&click=0&url=' + data.url + '&content=' + data.title + '&id=' + popupSettings.uuid),
+            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + data.keyword + '&click=' + userRank + '&url=' + data.url + '&content=' + data.title + '&id=' + popupSettings.uuid),
             success: function(status) {
                 if (status && status.length) {
                     console.log("@@@@@ user click post success! @@@@@");
@@ -124,36 +126,12 @@ if (!popupSettings.uuid) {
 }
 
 // part 2: save topic history, for visualization.html
-var topics = ["Arts", "Business", "Computers",
-    "Games", "Health", "Home",
-    "News", "Recreation", "Reference",
-    "Regional", "Science", "Shopping",
-    "Society", "Sports", "Kids & Teens Directory",
-    "World"
-]
-
-function initializeTopic(topics) {
-    var topicCount = {};
-    console.log(topics);
-    for (var i = 0; i < topics.length; i++) {
-        topicCount[topics[i]] = 0;
-    }
-    console.log(topicCount);
-    return topicCount;
-}
-
-
-
-// var userTopics = store.get('userTopics') || initializeTopic(topics);
-// var generatedTopics = store.get('generatedTopics') || initializeTopic(topics);
-
 var userTopics = store.get('userTopics') || {};
 var generatedTopics = store.get('generatedTopics') || {};
 
 var saveTopics = function() {
     store.set('userTopics', userTopics);
     store.set('generatedTopics', generatedTopics);
-    console.log("+++++++++++已设置topic变量++++++++++");
 }
 
 var addTopic = function(topicCollection, topic) {
@@ -190,7 +168,6 @@ var saveQueries = function() {
 var addQuery = function(queryCollection, query) {
     var splits = query.split(" ");
     $.each(splits, function(index, value) {
-        console.log(value);
         if (queryCollection.hasOwnProperty(value)) {
             queryCollection[value] += 1;
         } else {
