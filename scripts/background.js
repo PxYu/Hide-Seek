@@ -45,7 +45,7 @@ var requestHandlers = {
         callback(store.get(data.key));
     },
     loginfo: function(data, callback, sender) {
-        console.log('打印信息', sender.tab.url, data.text);
+        console.log(sender.tab.url, data.text);
     },
     closeme: function(data, callback, sender) {
         chrome.tabs.remove(sender.tab.id);

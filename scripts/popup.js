@@ -14,14 +14,8 @@ $(function() {
 
     var showHideButton = function() {
         if (BGPage.popupSettings.started) {
-            // $('#start_btn').hide();
-            // $('#stop_btn').show();
-
             $('#myonoffswitch').prop('checked', true);
         } else {
-            // $('#start_btn').show();
-            // $('#stop_btn').hide();
-
             $('#myonoffswitch').prop('checked', false);
         }
     }
@@ -32,8 +26,6 @@ $(function() {
         BGPage.savePopupSettings();
 
         showHideButton();
-
-        // fixedAlert('启动成功');
     }
 
     var stopHandle = function() {
@@ -41,14 +33,8 @@ $(function() {
         BGPage.savePopupSettings();
 
         showHideButton();
-
-        // fixedAlert('停止成功');
-
         BGPage.keywordsPools = [];
     }
-
-    // $('#start_btn').click(startHandle);
-    // $('#stop_btn').click(stopHandle);
 
     $('#myonoffswitch').click(function() {
         if ($(this).prop('checked')) {

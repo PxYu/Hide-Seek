@@ -26,7 +26,6 @@ if (ut == null || ut == undefined) {
     $('#viz').css("font-size", "16px");
     $('#viz').html("Make your first google search with Hide & Seek to see a brief report here.");
 } else {
-    // $('#viz').css("height", "80px");
     // make a new graph
     var graph = new Springy.Graph();
 
