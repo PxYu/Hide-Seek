@@ -64,6 +64,7 @@ $(function() {
                         method: 'HEAD',
                         action: 'A',
                         url: alist[idx].href,
+                        rank: idx
                     }, function(response) {
                         //alert(responseText);
                         console.log(response.status);
@@ -99,9 +100,23 @@ $(function() {
                             $("div.srg").append(this);
                         })
                     })
-                    $('#res a').click(function() {
+
+                    console.log($("#res .g .r a"));
+
+                    var resultList = $("#res .g .r a");
+
+
+                    $('#res .g .r a').click(function() {
                         var self = $(this);
                         var url = self.attr('href');
+                        var cnt = 0;
+                        // $.each(resultList, function(index, value) {
+                        //     if (self == value) {
+                        //         alert(index);
+                        //         alert(cnt);
+                        //     }
+                        //     cnt++;
+                        // })
                         console.log('=======', url);
 
                         if (url.indexOf('/url?') == 0) {

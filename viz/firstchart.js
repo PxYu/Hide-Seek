@@ -7,7 +7,6 @@ Highcharts.createElement('link', {
     type: 'text/css'
 }, null, document.getElementsByTagName('head')[0]);
 
-// var h = $("#concontainerer").height();
 var w = $("#concontainerer").width() * 0.5;
 
 var chart1 = undefined;

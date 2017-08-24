@@ -8,6 +8,9 @@ function generateUUID() {
     return uuid;
 };
 
+
+var rank = 0;
+
 //handle message
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -21,9 +24,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             console.log(type);
             if (type == "text/html") {
                 sendResponse({ status: "YES" });
+                rank = request.rank + 1;
             } else {
-                console.log("%%%%%%%% Cannot open %%%%%%%% ");
-                console.log("%%%%%%%% Because: " + type + "%%%%%%%%");
+                console.log("%%%%%%%% Cannot open type: " + type + " %%%%%%%%");
                 sendResponse({ status: "NO" });
             }
         })
@@ -232,13 +235,15 @@ var simulateSearch = function() {
 }
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     var title = changeInfo.title;
-    // if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
-    if (simulateTab && simulateTab.id === tabId && title) {
+    if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
+        // if (simulateTab && simulateTab.id === tabId && title) {
         if (tab.url.indexOf('www.google.com') == -1) {
-            console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
+            // console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
+            console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
+            console.log("RANKKKKKKK: " + rank);
             $.ajax({
                 type: 'POST',
-                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=0&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=' + rank + '&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
                 success: function(status) {
                     if (status && status.length) {
                         console.log("~~~~~ Post successful! ~~~~~")
@@ -268,7 +273,6 @@ setInterval(function() {
  */
 requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
-    //simulateKeyword = undefined;
 }
 
 /**
@@ -295,22 +299,17 @@ requestHandlers.handle_search = function(data, callback, sender) {
                         last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
-                                //write input topic
                                 last_user_topic = value;
                                 addTopic(userTopics, value);
-                                //write input
-                                // userQueries += q.replace(/[^A-Za-z0-9]/g, ' ') + ' ';
                                 addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
                             } else if (key == "notopic") {
                                 keywordsPools = keywordsPools.concat(value);
                                 addQuery(generatedQueries, value);
-                                // generatedQueries += value + ' ';
                             } else if (key != "db") {
                                 keywordsPools = keywordsPools.concat(key);
                                 last_generated_topics.push(value);
                                 addTopic(generatedTopics, value);
                                 addQuery(generatedQueries, key);
-                                // generatedQueries += key + ' ';
                             }
                         })
                         saveTopics();
