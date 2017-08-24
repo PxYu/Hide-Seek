@@ -14,8 +14,11 @@ var chart2 = undefined;
 
 //theme of the topic demonstration
 var theme = Highcharts.theme = {
-    colors: ['#7cb5ec', '#f7a35c', '#90ee7e', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee',
-        '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
+    // colors: ['#7cb5ec', '#f7a35c', '#90ee7e', '#7798BF', '#aaeeee', '#ff0066', '#eeaaee',
+    //     '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
+    // ],
+    colors: ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9',
+        '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'
     ],
     chart: {
         backgroundColor: null,
