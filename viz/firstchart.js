@@ -76,28 +76,27 @@ var theme = Highcharts.theme = {
 var parseWordCloudData = function(jsons) {
     var arr = [];
     $.each(jsons, function(key, value) {
+        // if (value > 4) {
+        //     arr.push({ name: key, weight: value });
+        // }
         arr.push({ name: key, weight: value });
-    })
-    return arr;
+    });
+    arr.sort(function(a, b) {
+        if (a.weight < b.weight) {
+            return 1;
+        } else if (a.weight > b.weight) {
+            return -1;
+        }
+        return 0;
+    });
+    return arr.slice(0, Math.min(101, arr.length));
 }
-
-// d3 parse data
-
-// var parseWordCloudData = function(jsons) {
-//     var arr = [];
-//     $.each(jsons, function(key, value) {
-//         arr.push({ text: key, size: 10 + value });
-//     })
-//     return arr;
-// }
 
 var bgp = chrome.extension.getBackgroundPage();
 var userTopics = bgp.userTopics;
 var generatedTopics = bgp.generatedTopics;
 var userQuery = parseWordCloudData(bgp.userQueries);
 var generatedQuery = parseWordCloudData(bgp.generatedQueries);
-// var userQuery = bgp.userQueries;
-// var generatedQuery = bgp.generatedQueries;
 var removeUnderscore = function(string) {
     return string.replace(/_/g, ' ');
 }

@@ -226,7 +226,7 @@
              */
             deriveFontSize: function deriveFontSize(relativeWeight) {
                 var maxFontSize = 40;
-                return Math.max(maxFontSize * relativeWeight, 10);
+                return Math.max(maxFontSize * relativeWeight, 16);
 
             },
             drawPoints: function() {
