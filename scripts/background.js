@@ -22,7 +22,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             async: true
         }).done(function(message, text, jqXHR) {
             var type = jqXHR.getResponseHeader('Content-Type').split(";")[0];
-            console.log(type);
             if (type == "text/html") {
                 sendResponse({ status: "YES" });
                 rank = request.rank + 1;
@@ -112,10 +111,11 @@ var popupSettings = store.get('popupSettings') || {
 
 var savePopupSettings = function() {
     store.set('popupSettings', popupSettings);
-    console.log("+++++++++++已设置全局变量++++++++++");
+    console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
     console.log(store.get('popupSettings').started);
     console.log(store.get('popupSettings').uuid);
     console.log(store.get('popupSettings').date);
+    console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
 }
 
 savePopupSettings();
@@ -186,23 +186,30 @@ var keywordsPools = [],
     simulateKeyword, simulateTab;
 var simulateSearch = function() {
     if (simulateTab) {
-        return console.log('正在执行任务...');
+        // return console.log('正在执行任务...');
+        return;
     }
 
-    console.log('keywordsPools', keywordsPools);
+    // console.log('keywordsPools', keywordsPools);
     if (!keywordsPools || !keywordsPools.length) {
-        return console.log('没有执行任务...')
+        // return console.log('没有执行任务...');
+        return;
     }
 
     simulateKeyword = keywordsPools[0];
     keywordsPools = keywordsPools.slice(1);
-    console.log('simulateKeyword: [[[ ', simulateKeyword, ' ]]]');
+    console.log('simulateKeyword:');
+    console.log('<<< ', simulateKeyword, ' >>>');
     chrome.tabs.create({ url: 'https://www.google.com/', active: false }, function(tab) {
         simulateTab = tab;
         setTimeout(function() {
-            try {
-                chrome.tabs.remove(tab.id);
-            } catch (e) {}
+            chrome.tabs.remove(tab.id, function() {
+                if (chrome.runtime.lastError) {
+                    // tab does not exist
+                } else {
+                    // tab exists
+                }
+            });
             if (simulateTab && simulateTab.id === tab.id) {
                 simulateTab = undefined;
                 simulateSearch();
@@ -216,8 +223,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         // if (simulateTab && simulateTab.id === tabId && title) {
         if (tab.url.indexOf('www.google.com') == -1) {
             // console.log(popupSettings.uuid, tab.url, title, simulateKeyword);
-            console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
-            console.log("RANKKKKKKK: " + rank);
+            // console.log(popupSettings.uuid, tab.url, tab.title, simulateKeyword);
             $.ajax({
                 type: 'POST',
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=' + rank + '&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
@@ -272,7 +278,7 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
-                        console.log(jsons);
+                        // console.log(jsons);
                         last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {
