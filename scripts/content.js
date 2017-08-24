@@ -1,12 +1,5 @@
-console.log('chrome_search');
 $(function() {
     var href = location.href;
-
-    /**
-     * 触发事件
-     * @param node
-     * @param eventType
-     */
     var triggerMouseEvent = function(node, eventType) {
         try {
             var clickEvent = document.createEvent('MouseEvents');
@@ -38,10 +31,6 @@ $(function() {
         }, 1000);
     }
 
-    // if (href === 'https://www.google.com/') {
-    //     autoSearch('apple');
-    // }
-
     if (href.indexOf('www.google.com.hk/search') != -1 || href.indexOf('www.google.com/search') != -1) {
         var q = decodeURIComponent(getQueryString(href, 'q'));
         console.log('q', q);
@@ -49,30 +38,28 @@ $(function() {
             chrome.extension.sendRequest({ handler: 'handle_search', q: q }, function(result) {
                 console.log('result', result);
 
-                /**
-                 * 模拟搜索处理，自动点击
-                 */
                 if (result && result.simulate) {
-                    console.log('模拟搜索处理，自动点击');
+                    // current page is simulated
                     var alist = $('#res .g .r a');
                     var idx = Math.floor(Math.random() * alist.length);
-                    // if (!alist[idx].href.endsWith('.pdf')) {
-                    //     console.log(alist[idx]);
-                    //     alist[idx].click();
-                    // }
+
+                    // make sure random click does not trigger a download
                     chrome.runtime.sendMessage({
                         method: 'HEAD',
                         action: 'A',
                         url: alist[idx].href,
                         rank: idx
                     }, function(response) {
-                        //alert(responseText);
                         console.log(response.status);
                         if (response.status == "YES") {
                             alist[idx].click();
+                        } else {
+                            // do not click
                         }
                     });
                 } else {
+                    // current page is user search page
+
                     // console.log("HIIIIII");
                     // $('div._NId').hide();
                     // // $('div.srg').hide();
@@ -85,8 +72,10 @@ $(function() {
                     //     $('div._NId').show();
                     // }, 2 * 1000)
 
+                    // insert re-ranking button
                     $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
                     $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "red" });
+
                     $("#rerank").click(function() {
                         var items = $("div.srg div.g").toArray();
                         items.reverse();
@@ -95,12 +84,14 @@ $(function() {
                         })
                     })
 
+                    // store page results
                     var resultList = $("#res .g .r a");
                     var hrefArray = [];
                     $.each(resultList, function(index, value) {
                         hrefArray.push(resultList[index].href);
                     })
 
+                    // sent click info
                     $('#res .g .r a').click(function() {
                         var self = $(this);
                         var url = self.attr('href');
@@ -128,9 +119,7 @@ $(function() {
             });
         }
     } else if (href === 'https://www.google.com/') {
-        /**
-         * simulate getting query word
-         */
+        // this page is google homepage
         chrome.extension.sendRequest({ handler: 'simulate_keyword' }, function(result) {
             if (result.keyword) {
                 autoSearch(result.keyword);
