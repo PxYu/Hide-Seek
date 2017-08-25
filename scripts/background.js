@@ -104,6 +104,7 @@ chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 // part 1: global setting including offswitch, user_id and starting date
 var popupSettings = store.get('popupSettings') || {
     started: true,
+    rerank: true,
     uuid: generateUUID(),
     date: new Date()
 }
@@ -112,6 +113,7 @@ var savePopupSettings = function() {
     store.set('popupSettings', popupSettings);
     console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
     console.log("+ " + store.get('popupSettings').started + " ".repeat((40 - store.get('popupSettings').started.toString().length)) + "+");
+    console.log("+ " + store.get('popupSettings').rerank + " ".repeat((40 - store.get('popupSettings').rerank.toString().length)) + "+");
     console.log("+ " + store.get('popupSettings').uuid + " ".repeat(4) + "+");
     console.log("+ " + store.get('popupSettings').date + " ".repeat(16) + "+");
     console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
