@@ -61,16 +61,24 @@ $(function() {
                     // current page is user search page
 
                     // insert re-ranking button
-                    $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
-                    $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "red" });
-
-                    $("#rerank").click(function() {
-                        var items = $("div.srg div.g").toArray();
-                        items.reverse();
-                        $.each(items, function() {
-                            $("div.srg").append(this);
-                        })
-                    })
+                    chrome.runtime.sendMessage({
+                        action: 'R',
+                    }, function(response) {
+                        console.log(response.status);
+                        if (response.status) {
+                            $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
+                            $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "red" });
+                            $("#rerank").click(function() {
+                                var items = $("div.srg div.g").toArray();
+                                items.reverse();
+                                $.each(items, function() {
+                                    $("div.srg").append(this);
+                                })
+                            })
+                        } else {
+                            // no re-rank
+                        }
+                    });
 
                     // store page results
                     var resultList = $("#res .g .r a");

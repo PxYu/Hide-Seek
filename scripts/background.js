@@ -33,6 +33,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 sendResponse({ status: "NO" });
             }
         })
+    } else if (request.action == 'R') {
+        sendResponse({ status: popupSettings.rerank })
     }
     return true;
 })
