@@ -67,7 +67,7 @@ $(function() {
                         console.log(response.status);
                         if (response.status) {
                             $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
-                            $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "red" });
+                            $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "green", "font-weight": "bold" });
                             $("#rerank").click(function() {
                                 var items = $("div.srg div.g").toArray();
                                 items.reverse();
@@ -77,11 +77,19 @@ $(function() {
                             })
                         } else {
                             // no re-rank
+                            ;
                         }
                     });
 
+                    // console.log($("div._NId .r a")); //选出所有可以点击的链接
+                    console.log($("div._NId").parent()[0]);
+                    $.each($("div._NId"), function(index, value) {
+                        console.log(this);
+                    });
                     // store page results
                     var resultList = $("#res .g .r a");
+                    console.log($("#res .g .r a"));
+                    console.log(resultList);
                     var hrefArray = [];
                     $.each(resultList, function(index, value) {
                         hrefArray.push(resultList[index].href);
