@@ -39,6 +39,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 })
 
+var toEightDigits = function(n) {
+    var s = n.toString;
+    return "0".repeat(8 - s.length) + s;
+}
+
 var requestHandlers = {
     global_set_store: function(data, callback, sender) {
         store.set(data.key, data.value);
@@ -182,6 +187,18 @@ var addQuery = function(queryCollection, query) {
 
 saveQueries();
 
+//part 5: save session id
+
+var session = store.get("session") || {
+    id: 0,
+    time: undefined,
+};
+var saveSession = function() {
+    store.set("session", session);
+}
+
+saveSession();
+
 // simulate search
 var keywordsPools = [],
     simulateKeyword, simulateTab;
@@ -211,6 +228,8 @@ var simulateSearch = function() {
         }, 10 * 1000);
     });
 }
+
+// post simulation data back to database
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     var title = changeInfo.title;
     if (simulateTab && simulateTab.id === tabId && changeInfo.status && changeInfo.status === 'complete') {
@@ -238,6 +257,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     }
 });
 
+// check if user makes a google search every 5 seconds
 setInterval(function() {
     if (!popupSettings.started) {
         return;
@@ -248,6 +268,10 @@ setInterval(function() {
 // simulate acquiring keywords
 requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
+}
+
+var isSameSession = function(d1, d2) {
+    return Math.floor((d2 - d1) / 1000 / 60) < 30;
 }
 
 // handle the search
@@ -261,6 +285,21 @@ requestHandlers.handle_search = function(data, callback, sender) {
     }
     if (lastSearch != q) {
         lastSearch = q;
+        if (session.time == undefined) {
+            // first session ever
+            session.time = new Date();
+        } else {
+            // there is a previous record
+            if (isSameSession(session.time, new Date())) {
+                // in the same session
+                session.time = new Date();
+            } else {
+                // not in the same session
+                session.time = new Date();
+                session.id += 1;
+                console.log("Session: " + toEightDigits(session.id));
+            }
+        }
         if (popupSettings.started) {
             $.ajax({
                 type: 'GET',
