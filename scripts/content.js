@@ -53,9 +53,7 @@ $(function() {
                         console.log(response.status);
                         if (response.status == "YES") {
                             alist[idx].click();
-                        } else {
-                            // do not click
-                        }
+                        } else {}
                     });
                 } else {
                     // current page is user search page
@@ -75,13 +73,9 @@ $(function() {
                                     $("div.srg").append(this);
                                 })
                             })
-                        } else {
-                            // no re-rank
-                            ;
-                        }
+                        } else {}
                     });
 
-                    // console.log($("div._NId .r a")); //选出所有可以点击的链接
                     console.log($("div._NId").parent()[0]);
                     $.each($("div._NId"), function(index, value) {
                         console.log(this);
