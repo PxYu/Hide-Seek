@@ -23,6 +23,7 @@ $(function() {
 
     var startHandle = function() {
         BGPage.popupSettings.started = true;
+        BGPage.popupSettings.rerank = true;
         BGPage.savePopupSettings();
 
         showHideButton();
@@ -30,6 +31,7 @@ $(function() {
 
     var stopHandle = function() {
         BGPage.popupSettings.started = false;
+        BGPage.popupSettings.rerank = false;
         BGPage.savePopupSettings();
 
         showHideButton();

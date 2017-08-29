@@ -116,6 +116,20 @@ var popupSettings = store.get('popupSettings') || {
     date: new Date()
 }
 
+if (store.get('popupSettings') == undefined) {
+    var popupSettings = {
+        started: true,
+        rerank: true,
+        uuid: generateUUID(),
+        date: new Date()
+    };
+    // save new user-id to database!
+
+
+} else {
+    var popupSettings = store.get('popupSettings');
+}
+
 var savePopupSettings = function() {
     store.set('popupSettings', popupSettings);
     console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
