@@ -9,6 +9,18 @@ var generateUUID = function() {
         d = Math.floor(d / 16);
         return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
+
+    // append user-id to database
+    $.ajax({
+        type: "POST",
+        url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=R&uid=' + uuid),
+        success: function(status) {
+            if (status && status.length) {
+                console.log("@@@@@ User registration success! @@@@@");
+            }
+        }
+    })
+
     return uuid;
 };
 

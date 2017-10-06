@@ -58,11 +58,18 @@ $(function() {
                 } else {
                     // current page is user search page
 
+                    // upload the page to the server
+
+
+                    // download the order of re-rank
+
+
                     // insert re-ranking button
                     chrome.runtime.sendMessage({
                         action: 'R',
                     }, function(response) {
                         console.log(response.status);
+                        // whether re-ranking switch is on
                         if (response.status) {
                             $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
                             $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "green", "font-weight": "bold" });
