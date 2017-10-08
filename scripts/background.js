@@ -52,7 +52,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         // to download reranking data
         $.ajax({
             type: "POST",
-            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?uid=' + popupSettings.uuid + '&action=RR'),
+            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?uid=' + popupSettings.uuid + '&action=U'),
             dataType: 'json',
             data: { json: request.data },
             success: function(data) {
@@ -311,7 +311,7 @@ requestHandlers.handle_search = function(data, callback, sender) {
         lastSearch = q;
         if (popupSettings.started) {
             $.ajax({
-                type: 'GET',
+                type: 'POST',
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=4'),
                 success: function(keywords) {
                     if (keywords && keywords.length) {
