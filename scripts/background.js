@@ -28,8 +28,8 @@ var generateUUID = function() {
 var rank = 0;
 var userRank = 0;
 
-// check url content type: for simulation random click
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    // check content type
     if (request.action == 'A') {
         $.ajax({
             type: request.method,
@@ -46,7 +46,20 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             }
         })
     } else if (request.action == 'R') {
+        // check if rerank feature is on
         sendResponse({ status: popupSettings.rerank })
+    } else if (request.action == 'U') {
+        // to download reranking data
+        $.ajax({
+            type: "POST",
+            url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?uid=' + popupSettings.uuid + '&action=RR'),
+            dataType: 'json',
+            data: { json: request.data },
+            success: function(data) {
+                // data.rank is a json object, parse it in content.js
+                sendResponse({ data: data.rank });
+            }
+        })
     }
     return true;
 })
@@ -100,7 +113,7 @@ var requestHandlers = {
             userRank = data.index + 1;
             $.ajax({
                 type: 'POST',
-                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + data.keyword + '&click=' + userRank + '&url=' + data.url + '&content=' + data.title + '&id=' + popupSettings.uuid),
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=UC&query=' + data.keyword + '&click=' + userRank + '&url=' + data.url + '&content=' + data.title + '&uid=' + popupSettings.uuid + '&snip=' + data.content),
                 success: function(status) {
                     if (status && status.length) {
                         console.log("@@@@@ user click post success! @@@@@");
@@ -213,18 +226,6 @@ var addQuery = function(queryCollection, query) {
 
 saveQueries();
 
-//part 5: save session id
-
-var session = store.get("session") || {
-    id: 0,
-    time: undefined,
-};
-var saveSession = function() {
-    store.set("session", session);
-}
-
-saveSession();
-
 // simulate search
 var keywordsPools = [],
     simulateKeyword, simulateTab;
@@ -263,7 +264,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         if (tab.url.indexOf('www.google.com') == -1) {
             $.ajax({
                 type: 'POST',
-                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?query=' + simulateKeyword + '&click=' + rank + '&url=' + tab.url + '&content=' + tab.title + '&id=' + popupSettings.uuid),
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=SC&query=' + simulateKeyword + '&click=' + rank + '&url=' + tab.url + '&content=' + tab.title + '&uid=' + popupSettings.uuid),
                 success: function(status) {
                     if (status && status.length) {
                         console.log("&&&&& Post successful! &&&&&")
@@ -296,9 +297,6 @@ requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
 }
 
-var isSameSession = function(d1, d2) {
-    return Math.floor((d2 - d1) / 1000 / 60) < 30;
-}
 
 // handle the search
 var lastSearch;
@@ -311,29 +309,13 @@ requestHandlers.handle_search = function(data, callback, sender) {
     }
     if (lastSearch != q) {
         lastSearch = q;
-        if (session.time == undefined) {
-            // first session ever
-            session.time = new Date();
-        } else {
-            // there is a previous record
-            if (isSameSession(session.time, new Date())) {
-                // in the same session
-                session.time = new Date();
-            } else {
-                // not in the same session
-                session.time = new Date();
-                session.id += 1;
-                console.log("Session: " + toEightDigits(session.id));
-            }
-        }
         if (popupSettings.started) {
             $.ajax({
                 type: 'GET',
-                url: apihost + '/QueryGenerator/QueryGenerator?query=' + q + '&id=' + popupSettings.uuid + '&numcover=4',
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=4'),
                 success: function(keywords) {
                     if (keywords && keywords.length) {
                         var jsons = JSON.parse(keywords);
-                        // console.log(jsons);
                         last_generated_topics = [];
                         $.each(jsons, function(key, value) {
                             if (key == "input") {

@@ -58,11 +58,24 @@ $(function() {
                 } else {
                     // current page is user search page
 
-                    // upload the page to the server
+                    // upload the page to the server and download re-ranking
 
+                    // 1. capture snippets from the page & save to array
+                    var snippets = [];
+                    $.each($("#res .g").find("span.st").clone().children().remove().end(), function(idx, val) {
+                        snippets.push($(this).text());
+                    })
+                    console.log(snippets);
 
-                    // download the order of re-rank
-
+                    // 2. transfer them to bgp and store rank locally
+                    var re_rank = undefined;
+                    chrome.runtime.sendMessage({
+                        action: 'U',
+                        data: snippets
+                    }, function(response) {
+                        re_rank = response.data;
+                        // json.parse(re_rank);///
+                    })
 
                     // insert re-ranking button
                     chrome.runtime.sendMessage({
@@ -87,10 +100,12 @@ $(function() {
                     $.each($("div._NId"), function(index, value) {
                         console.log(this);
                     });
+
                     // store page results
                     var resultList = $("#res .g .r a");
-                    console.log($("#res .g .r a"));
+                    // 1. array of link objects
                     console.log(resultList);
+                    // 2. array of objects' links
                     var hrefArray = [];
                     $.each(resultList, function(index, value) {
                         hrefArray.push(resultList[index].href);
@@ -109,16 +124,19 @@ $(function() {
                                 i = index;
                             }
                         })
-                        var title = self.text();
-                        var keyword = $('#lst-ib').val();
+                        var snip = snippets[i];
+                        // var title = self.text();
+                        // var keyword = $('#lst-ib').val();
 
                         chrome.extension.sendRequest({
                             handler: 'query_generator',
+                            content: snip,
                             url: url,
                             title: title,
                             keyword: keyword,
                             index: i
                         });
+
                     });
                 }
             });
