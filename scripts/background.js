@@ -54,6 +54,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             type: "POST",
             url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?uid=' + popupSettings.uuid + '&action=U'),
             dataType: 'json',
+            // request.data is like [snippet1, snippet2, ...]
             data: { json: request.data },
             success: function(data) {
                 // data.rank is a json object, parse it in content.js
