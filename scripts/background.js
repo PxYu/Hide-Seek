@@ -253,7 +253,7 @@ var simulateSearch = function() {
                 simulateTab = undefined;
                 simulateSearch();
             }
-        }, 10 * 1000);
+        }, 15 * 1000);
     });
 }
 
@@ -332,31 +332,6 @@ requestHandlers.handle_search = function(data, callback, sender) {
                         saveLastTopics();
                         saveQueries();
                     });
-                    // if (keywords && keywords.length) {
-                    //     var jsons = JSON.parse(keywords);
-                    //     console.log(jsons);
-                    //     last_generated_topics = [];
-                    //     $.each(jsons, function(key, value) {
-                    //         if (key == "input") {
-                    //             last_user_topic = value;
-                    //             addTopic(userTopics, value);
-                    //             addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
-                    //         } else if (key == "notopic") {
-                    //             keywordsPools = keywordsPools.concat(value);
-                    //             addQuery(generatedQueries, value);
-                    //         } else if (key != "db") {
-                    //             keywordsPools = keywordsPools.concat(key);
-                    //             last_generated_topics.push(value);
-                    //             addTopic(generatedTopics, value);
-                    //             addQuery(generatedQueries, key);
-                    //         }
-                    //     })
-                    //     saveTopics();
-                    //     saveLastTopics();
-                    //     saveQueries();
-                    // } else {
-                    //     console.log('no?');
-                    // }
                 }
             });
         }

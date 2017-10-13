@@ -125,8 +125,8 @@ $(function() {
                             }
                         })
                         var snip = snippets[i];
-                        // var title = self.text();
-                        // var keyword = $('#lst-ib').val();
+                        var title = self.text();
+                        var keyword = $('#lst-ib').val();
 
                         chrome.extension.sendRequest({
                             handler: 'query_generator',
