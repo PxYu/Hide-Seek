@@ -315,28 +315,48 @@ requestHandlers.handle_search = function(data, callback, sender) {
                 type: 'POST',
                 url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=4'),
                 success: function(keywords) {
-                    if (keywords && keywords.length) {
-                        var jsons = JSON.parse(keywords);
-                        last_generated_topics = [];
-                        $.each(jsons, function(key, value) {
-                            if (key == "input") {
-                                last_user_topic = value;
-                                addTopic(userTopics, value);
-                                addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
-                            } else if (key == "notopic") {
-                                keywordsPools = keywordsPools.concat(value);
-                                addQuery(generatedQueries, value);
-                            } else if (key != "db") {
-                                keywordsPools = keywordsPools.concat(key);
-                                last_generated_topics.push(value);
-                                addTopic(generatedTopics, value);
-                                addQuery(generatedQueries, key);
-                            }
-                        })
+                    last_generated_topics = [];
+                    $.each(keywords, function(key, val) {
+                        console.log(key + ", " + val);
+                        if (key == "input") {
+                            last_user_topic = val;
+                            addTopic(userTopics, val);
+                            addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
+                        } else {
+                            keywordsPools = keywordsPools.concat(key);
+                            last_generated_topics.push(val);
+                            addTopic(generatedTopics, val);
+                            addQuery(generatedQueries, key);
+                        }
                         saveTopics();
                         saveLastTopics();
                         saveQueries();
-                    }
+                    });
+                    // if (keywords && keywords.length) {
+                    //     var jsons = JSON.parse(keywords);
+                    //     console.log(jsons);
+                    //     last_generated_topics = [];
+                    //     $.each(jsons, function(key, value) {
+                    //         if (key == "input") {
+                    //             last_user_topic = value;
+                    //             addTopic(userTopics, value);
+                    //             addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
+                    //         } else if (key == "notopic") {
+                    //             keywordsPools = keywordsPools.concat(value);
+                    //             addQuery(generatedQueries, value);
+                    //         } else if (key != "db") {
+                    //             keywordsPools = keywordsPools.concat(key);
+                    //             last_generated_topics.push(value);
+                    //             addTopic(generatedTopics, value);
+                    //             addQuery(generatedQueries, key);
+                    //         }
+                    //     })
+                    //     saveTopics();
+                    //     saveLastTopics();
+                    //     saveQueries();
+                    // } else {
+                    //     console.log('no?');
+                    // }
                 }
             });
         }
