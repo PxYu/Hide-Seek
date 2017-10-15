@@ -61,23 +61,49 @@ $(function() {
                     // upload the page to the server and download re-ranking
 
                     // 1. capture snippets from the page & save to array
+                    // var snippets = [];
+                    // // $.each($("#res .g").find("span.st").clone().children().remove().end(), function(idx, val) {
+                    // $.each($("div.srg").find("div.g span.st"), function(idx, val) {
+                    //     console.log($(this));
+                    //     snippets.push($(this).text());
+                    // })
+                    // console.log(snippets);
+
+                    var items = [];
                     var snippets = [];
-                    $.each($("#res .g").find("span.st").clone().children().remove().end(), function(idx, val) {
-                        snippets.push($(this).text());
-                    })
-                    console.log(snippets);
+                    var block = [];
 
-                    // 2. transfer them to bgp and store rank locally
-                    var re_rank = undefined;
-                    chrome.runtime.sendMessage({
-                        action: 'U',
-                        data: snippets
-                    }, function(response) {
-                        re_rank = response.data;
-                        // json.parse(re_rank);///
-                    })
 
-                    // insert re-ranking button
+                    $.each($("div.srg"), function(index, value) {
+                        console.log("=======");
+                        // 把block信息存起来
+                        block.push($(this));
+                        // 把block中条目信息存起来（顺序）
+                        var tmpItem = $(this).find("div.g").toArray();
+                        var clone = tmpItem.slice(0);
+                        console.log(tmpItem);
+                        // items.push(tmpItem);
+                        var snippet = [];
+                        $.each($(this).find("div.g span.st"), function(idx, val) {
+                            console.log($(this));
+                            snippet.push($(this).text());
+                        })
+
+                        chrome.runtime.sendMessage({
+                            action: 'U',
+                            data: snippet
+                        }, function(response) {
+                            var re_rank = response.data;
+                            console.log(re_rank);
+                            tmpItem.sort(function(a, b) {
+                                return re_rank[clone.indexOf(a)] - re_rank[clone.indexOf(b)];
+                            })
+                            console.log(tmpItem);
+                            items.push(tmpItem);
+                        })
+
+                    });
+
                     chrome.runtime.sendMessage({
                         action: 'R',
                     }, function(response) {
@@ -87,29 +113,23 @@ $(function() {
                             $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
                             $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "green", "font-weight": "bold" });
                             $("#rerank").click(function() {
-                                var items = $("div.srg div.g").toArray();
-                                items.reverse();
-                                $.each(items, function() {
-                                    $("div.srg").append(this);
-                                })
+                                console.log($("#rerank"));
+                                $("#rerank").attr('disabled', 'disabled');
+                                $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "grey", "font-weight": "bold" });
+                                var i = 0;
+                                $.each(block, function() {
+                                    var tmp = $(this);
+                                    console.log(tmp[0]);
+
+                                    $.each(items[i], function() {
+                                        tmp[0].append(this);
+                                        console.log(this);
+                                    })
+                                    i += 1;
+                                });
                             })
                         } else {}
                     });
-
-                    console.log($("div._NId").parent()[0]);
-                    $.each($("div._NId"), function(index, value) {
-                        console.log(this);
-                    });
-
-                    // store page results
-                    var resultList = $("#res .g .r a");
-                    // 1. array of link objects
-                    console.log(resultList);
-                    // 2. array of objects' links
-                    var hrefArray = [];
-                    $.each(resultList, function(index, value) {
-                        hrefArray.push(resultList[index].href);
-                    })
 
                     // sent click info
                     $('#res .g .r a').click(function() {
@@ -118,13 +138,8 @@ $(function() {
                         if (url.indexOf('/url?') == 0) {
                             url = decodeURIComponent(getQueryString(url, 'url'));
                         }
-                        var i = 0;
-                        $.each(hrefArray, function(index, value) {
-                            if (hrefArray[index] == url) {
-                                i = index;
-                            }
-                        })
-                        var snip = snippets[i];
+
+                        var snip = $(this).parent().closest('div').find(".st").text();
                         var title = self.text();
                         var keyword = $('#lst-ib').val();
 
@@ -134,7 +149,7 @@ $(function() {
                             url: url,
                             title: title,
                             keyword: keyword,
-                            index: i
+                            index: -1
                         });
 
                     });

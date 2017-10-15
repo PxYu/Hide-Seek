@@ -57,8 +57,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             // request.data is like [snippet1, snippet2, ...]
             data: { json: request.data },
             success: function(data) {
-                // data.rank is a json object, parse it in content.js
-                sendResponse({ data: data.rank });
+                console.log("the rank is ::::::");
+                console.log(data);
+                sendResponse({ data: data });
             }
         })
     }
@@ -140,20 +141,6 @@ var popupSettings = store.get('popupSettings') || {
     rerank: true,
     uuid: generateUUID(),
     date: new Date()
-}
-
-if (store.get('popupSettings') == undefined) {
-    var popupSettings = {
-        started: true,
-        rerank: true,
-        uuid: generateUUID(),
-        date: new Date()
-    };
-    // save new user-id to database!
-
-
-} else {
-    var popupSettings = store.get('popupSettings');
 }
 
 var savePopupSettings = function() {
