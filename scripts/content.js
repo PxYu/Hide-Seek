@@ -60,49 +60,40 @@ $(function() {
 
                     // upload the page to the server and download re-ranking
 
-                    // 1. capture snippets from the page & save to array
-                    // var snippets = [];
-                    // // $.each($("#res .g").find("span.st").clone().children().remove().end(), function(idx, val) {
-                    // $.each($("div.srg").find("div.g span.st"), function(idx, val) {
-                    //     console.log($(this));
-                    //     snippets.push($(this).text());
-                    // })
-                    // console.log(snippets);
-
                     var items = [];
                     var snippets = [];
                     var block = [];
-
+                    var numInEachBlock = [0];
 
                     $.each($("div.srg"), function(index, value) {
                         console.log("=======");
-                        // 把block信息存起来
+                        // save the block
                         block.push($(this));
-                        // 把block中条目信息存起来（顺序）
+                        // save items in block in order
                         var tmpItem = $(this).find("div.g").toArray();
-                        var clone = tmpItem.slice(0);
+                        numInEachBlock.push(tmpItem.length);
+                        $.each(tmpItem, function(idx, val) {
+                            items.push($(this));
+                        });
                         console.log(tmpItem);
-                        // items.push(tmpItem);
-                        var snippet = [];
                         $.each($(this).find("div.g span.st"), function(idx, val) {
                             console.log($(this));
-                            snippet.push($(this).text());
+                            snippets.push($(this).text());
                         })
-
-                        chrome.runtime.sendMessage({
-                            action: 'U',
-                            data: snippet
-                        }, function(response) {
-                            var re_rank = response.data;
-                            console.log(re_rank);
-                            tmpItem.sort(function(a, b) {
-                                return re_rank[clone.indexOf(a)] - re_rank[clone.indexOf(b)];
-                            })
-                            console.log(tmpItem);
-                            items.push(tmpItem);
-                        })
-
                     });
+
+                    var clone = items.slice(0);
+
+                    chrome.runtime.sendMessage({
+                        action: 'U',
+                        data: snippets
+                    }, function(response) {
+                        var re_rank = response.data;
+                        console.log(re_rank);
+                        items.sort(function(a, b) {
+                            return re_rank[clone.indexOf(a)] - re_rank[clone.indexOf(b)];
+                        })
+                    })
 
                     chrome.runtime.sendMessage({
                         action: 'R',
@@ -113,25 +104,23 @@ $(function() {
                             $('<input type="button" id="rerank" value="re-rank results" style="float: right">').insertAfter("nobr");
                             $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "green", "font-weight": "bold" });
                             $("#rerank").click(function() {
-                                console.log($("#rerank"));
                                 $("#rerank").attr('disabled', 'disabled');
                                 $("#rerank").removeAttr('style').css({ "font-size": "20px", "color": "grey", "font-weight": "bold" });
                                 var i = 0;
                                 $.each(block, function() {
                                     var tmp = $(this);
                                     console.log(tmp[0]);
-
-                                    $.each(items[i], function() {
-                                        tmp[0].append(this);
-                                        console.log(this);
+                                    $.each(items.slice(numInEachBlock[i], numInEachBlock[i + 1] - 1), function() {
+                                        tmp[0].append(this[0]);
+                                        console.log(this[0]);
                                     })
                                     i += 1;
                                 });
-                            })
+                            });
                         } else {}
                     });
 
-                    // sent click info
+                    // send user click info
                     $('#res .g .r a').click(function() {
                         var self = $(this);
                         var url = self.attr('href');
@@ -143,8 +132,17 @@ $(function() {
                         var title = self.text();
                         var keyword = $('#lst-ib').val();
 
-                        chrome.extension.sendRequest({
-                            handler: 'query_generator',
+                        // chrome.extension.sendRequest({
+                        //     handler: 'query_generator',
+                        //     content: snip,
+                        //     url: url,
+                        //     title: title,
+                        //     keyword: keyword,
+                        //     index: -1
+                        // });
+
+                        chrome.runtime.sendMessage({
+                            action: "UC",
                             content: snip,
                             url: url,
                             title: title,

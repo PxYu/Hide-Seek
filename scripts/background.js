@@ -2,6 +2,11 @@ String.prototype.repeat = function(length) {
     return Array(length + 1).join(this);
 };
 
+var toEightDigits = function(n) {
+    var s = n.toString;
+    return "0".repeat(8 - s.length) + s;
+}
+
 var generateUUID = function() {
     var d = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -20,10 +25,8 @@ var generateUUID = function() {
             }
         }
     })
-
     return uuid;
 };
-
 
 var rank = 0;
 var userRank = 0;
@@ -57,65 +60,17 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             // request.data is like [snippet1, snippet2, ...]
             data: { json: request.data },
             success: function(data) {
-                console.log("the rank is ::::::");
+                console.log(":::::: the rank is ::::::");
                 console.log(data);
                 sendResponse({ data: data });
             }
         })
-    }
-    return true;
-})
-
-var toEightDigits = function(n) {
-    var s = n.toString;
-    return "0".repeat(8 - s.length) + s;
-}
-
-var requestHandlers = {
-    global_set_store: function(data, callback, sender) {
-        store.set(data.key, data.value);
-    },
-    global_get_store: function(data, callback, sender) {
-        callback(store.get(data.key));
-    },
-    loginfo: function(data, callback, sender) {
-        console.log(sender.tab.url, data.text);
-    },
-    closeme: function(data, callback, sender) {
-        chrome.tabs.remove(sender.tab.id);
-    },
-    ajax_post: function(data, callback, sender) {
-        $.ajax({
-            type: 'POST',
-            url: data.url,
-            data: data.data,
-            dataType: "json",
-            success: function(result) {
-                callback({ success: true, data: result });
-            },
-            error: function() {
-                callback({ success: false });
-            }
-        });
-    },
-    ajax_get: function(data, callback, sender) {
-        $.ajax({
-            type: 'GET',
-            url: data.url,
-            success: function(result) {
-                callback({ success: true, data: result });
-            },
-            error: function() {
-                callback({ success: false });
-            }
-        });
-    },
-    query_generator: function(data, callback, sender) {
+    } else if (request.action == "UC") {
         if (popupSettings.started) {
-            userRank = data.index + 1;
+            userRank = request.index + 1;
             $.ajax({
                 type: 'POST',
-                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=UC&query=' + data.keyword + '&click=' + userRank + '&url=' + data.url + '&content=' + data.title + '&uid=' + popupSettings.uuid + '&snip=' + data.content),
+                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=UC&query=' + request.keyword + '&click=' + userRank + '&url=' + request.url + '&content=' + request.title + '&uid=' + popupSettings.uuid + '&snip=' + request.content),
                 success: function(status) {
                     if (status && status.length) {
                         console.log("@@@@@ user click post success! @@@@@");
@@ -124,12 +79,10 @@ var requestHandlers = {
             })
         }
     }
-}
+    return true;
+})
 
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-    requestHandlers[request.handler](request, sendResponse, sender);
-});
-
+var requestHandlers = {};
 
 /**
  * data storage
@@ -280,7 +233,7 @@ setInterval(function() {
     simulateSearch();
 }, 5 * 1000);
 
-// simulate acquiring keywords
+// simulate acquired keywords
 requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
 }
