@@ -8,9 +8,8 @@ Presented by [HCDM Group](http://www.cs.virginia.edu/~hw5x/HCDM/), University of
 
 Hide & Seek has **not** yet been published to chrome web store. Feel free to manually install the extension following such steps.
 
-1. Download or fork project to your computer.
+1. Download or fork project to your computer. Click the green button `Clone or Download` in top-right corner of this page.
 2. Open Chrome and go to `chrome://extensions`
 3. Click "load unpacked extension..."
-4. Select project folder.
-
-Then you are good to go!
+4. Select the downloaded project folder.
+5. You are good to go!
