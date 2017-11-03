@@ -132,15 +132,6 @@ $(function() {
                         var title = self.text();
                         var keyword = $('#lst-ib').val();
 
-                        // chrome.extension.sendRequest({
-                        //     handler: 'query_generator',
-                        //     content: snip,
-                        //     url: url,
-                        //     title: title,
-                        //     keyword: keyword,
-                        //     index: -1
-                        // });
-
                         chrome.runtime.sendMessage({
                             action: "UC",
                             content: snip,
@@ -149,7 +140,6 @@ $(function() {
                             keyword: keyword,
                             index: -1
                         });
-
                     });
                 }
             });
