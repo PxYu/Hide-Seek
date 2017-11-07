@@ -31,7 +31,7 @@ $(function() {
         }, 1000);
     }
 
-    if (href.indexOf('www.google.com.hk/search') != -1 || href.indexOf('www.google.com/search') != -1) {
+    if (href.indexOf('www.google.com.hk/search') != -1 || href.indexOf('www.google.com/search') != -1 || href.indexOf('www.google.ca/search') != -1 || href.indexOf('www.google.co.uk/search') != -1) {
         var q = decodeURIComponent(getQueryString(href, 'q'));
         console.log('q', q);
         if (q) {
@@ -59,6 +59,8 @@ $(function() {
                     // current page is user search page
 
                     // upload the page to the server and download re-ranking
+
+                    console.log("!!!!!!!!!!!!!!!!!")
 
                     var items = [];
                     var snippets = [];

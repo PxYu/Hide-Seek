@@ -82,6 +82,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 })
 
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+    requestHandlers[request.handler](request, sendResponse, sender);
+});
+
 var requestHandlers = {};
 
 /**
