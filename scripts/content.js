@@ -59,9 +59,6 @@ $(function() {
                     // current page is user search page
 
                     // upload the page to the server and download re-ranking
-
-                    console.log("!!!!!!!!!!!!!!!!!")
-
                     var items = [];
                     var snippets = [];
                     var block = [];
@@ -148,10 +145,8 @@ $(function() {
         }
     } else if (href === 'https://www.google.com/') {
         // this page is google homepage
-        // should try to find out if it's simulated or not
         chrome.extension.sendRequest({ handler: 'handle_search' }, function(result) {
             console.log('result', result);
-
             if (result && result.simulate) {
                 chrome.extension.sendRequest({ handler: 'simulate_keyword' }, function(result) {
                     if (result.keyword) {

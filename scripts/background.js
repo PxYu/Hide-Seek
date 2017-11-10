@@ -97,7 +97,9 @@ var popupSettings = store.get('popupSettings') || {
     started: true,
     rerank: true,
     uuid: generateUUID(),
-    date: new Date()
+    date: new Date(),
+    numcover: 4,
+    smlt_to: 15
 }
 
 var savePopupSettings = function() {
@@ -107,6 +109,8 @@ var savePopupSettings = function() {
     console.log("+ " + store.get('popupSettings').rerank + " ".repeat((40 - store.get('popupSettings').rerank.toString().length)) + "+");
     console.log("+ " + store.get('popupSettings').uuid + " ".repeat(4) + "+");
     console.log("+ " + store.get('popupSettings').date + " ".repeat(16) + "+");
+    console.log("+ " + store.get('popupSettings').numcover + " ".repeat((40 - store.get('popupSettings').numcover.toString().length)) + "+");
+    console.log("+ " + store.get('popupSettings').smlt_to + " ".repeat((40 - store.get('popupSettings').smlt_to.toString().length)) + "+");
     console.log("+++++++++++ GLOBAL VARIABLES SET ++++++++++");
 }
 
@@ -197,7 +201,7 @@ var simulateSearch = function() {
                 simulateTab = undefined;
                 simulateSearch();
             }
-        }, 15 * 1000);
+        }, popupSettings.smlt_to * 1000);
     });
 }
 
@@ -242,19 +246,15 @@ requestHandlers.simulate_keyword = function(data, callback, sender) {
     callback({ keyword: simulateKeyword });
 }
 
-
 // handle the search
 var lastSearch;
 
 requestHandlers.handle_search = function(data, callback, sender) {
-    // var q = data.q;
     if (simulateTab && simulateTab.id === sender.tab.id) {
         return callback({ simulate: true });
     } else {
         callback({ simulate: false });
     }
-
-
     if (data.q != undefined) {
         var q = data.q;
         if (lastSearch != q) {
@@ -262,7 +262,7 @@ requestHandlers.handle_search = function(data, callback, sender) {
             if (popupSettings.started) {
                 $.ajax({
                     type: 'POST',
-                    url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=4'),
+                    url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=' + popupSettings.numcover),
                     success: function(keywords) {
                         last_generated_topics = [];
                         $.each(keywords, function(key, val) {

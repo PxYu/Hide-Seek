@@ -8,15 +8,24 @@
 </head>
 
 <body>
-    <h1>Hello</h1>
     <div>
+        <label for="button1">Extension</label>
         <input id="button1" type="checkbox"></input>
-        <label for="button1">entension</label>
     </div>
     <div>
+        <label for="button2">Re-ranking</label>
         <input id="button2" type="checkbox"></input>
-        <label for="button2">re-ranking</label>
+
     </div>
+    <div>
+        <input type="text" name="numcover" id="numcover" size="2px" />
+        <label for="numcover"> cover queries / request [2 ~ 8]</label>
+    </div>
+    <div>
+        <input type="text" name="smlt_to" id="smlt_to" size="2px" />
+        <label for="smlt_to"> seconds / simulation max [10 ~ 60 seconds]</label>
+    </div>
+    <div id="status" style="color:rgb(255, 0, 0)"></div>
     <script src="scripts/options.js"></script>
 </body>
 
