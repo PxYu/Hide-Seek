@@ -148,10 +148,18 @@ $(function() {
         }
     } else if (href === 'https://www.google.com/') {
         // this page is google homepage
-        chrome.extension.sendRequest({ handler: 'simulate_keyword' }, function(result) {
-            if (result.keyword) {
-                autoSearch(result.keyword);
-            }
+        // should try to find out if it's simulated or not
+        chrome.extension.sendRequest({ handler: 'handle_search' }, function(result) {
+            console.log('result', result);
+
+            if (result && result.simulate) {
+                chrome.extension.sendRequest({ handler: 'simulate_keyword' }, function(result) {
+                    if (result.keyword) {
+                        autoSearch(result.keyword);
+                    }
+                });
+            } else {}
+
         });
     }
 });

@@ -245,39 +245,45 @@ requestHandlers.simulate_keyword = function(data, callback, sender) {
 
 // handle the search
 var lastSearch;
+
 requestHandlers.handle_search = function(data, callback, sender) {
-    var q = data.q;
+    // var q = data.q;
     if (simulateTab && simulateTab.id === sender.tab.id) {
         return callback({ simulate: true });
     } else {
         callback({ simulate: false });
     }
-    if (lastSearch != q) {
-        lastSearch = q;
-        if (popupSettings.started) {
-            $.ajax({
-                type: 'POST',
-                url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=4'),
-                success: function(keywords) {
-                    last_generated_topics = [];
-                    $.each(keywords, function(key, val) {
-                        console.log(key + ", " + val);
-                        if (key == "input") {
-                            last_user_topic = val;
-                            addTopic(userTopics, val);
-                            addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
-                        } else {
-                            keywordsPools = keywordsPools.concat(key);
-                            last_generated_topics.push(val);
-                            addTopic(generatedTopics, val);
-                            addQuery(generatedQueries, key);
-                        }
-                        saveTopics();
-                        saveLastTopics();
-                        saveQueries();
-                    });
-                }
-            });
+
+
+    if (data.q != undefined) {
+        var q = data.q;
+        if (lastSearch != q) {
+            lastSearch = q;
+            if (popupSettings.started) {
+                $.ajax({
+                    type: 'POST',
+                    url: encodeURI(apihost + '/QueryGenerator/QueryGenerator?action=Q&query=' + q + '&uid=' + popupSettings.uuid + '&numcover=4'),
+                    success: function(keywords) {
+                        last_generated_topics = [];
+                        $.each(keywords, function(key, val) {
+                            console.log(key + ", " + val);
+                            if (key == "input") {
+                                last_user_topic = val;
+                                addTopic(userTopics, val);
+                                addQuery(userQueries, q.replace(/[^A-Za-z0-9]/g, ' '));
+                            } else {
+                                keywordsPools = keywordsPools.concat(key);
+                                last_generated_topics.push(val);
+                                addTopic(generatedTopics, val);
+                                addQuery(generatedQueries, key);
+                            }
+                            saveTopics();
+                            saveLastTopics();
+                            saveQueries();
+                        });
+                    }
+                });
+            }
         }
     }
 }
