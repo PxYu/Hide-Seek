@@ -10,6 +10,7 @@
     <script src="bower_components/jquery/dist/jquery.js"></script>
     <script src="bower_components/tether/dist/js/tether.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/store-js/store.js"></script>
     <script src="bower_components/Springy/springy.js"></script>
     <script src="bower_components/Springy/springyui.js"></script>
     <script src="scripts/popup.js"></script>
@@ -17,22 +18,31 @@
 
 
 <body>
-    <div id="alert" style="position: fixed; top: 0px; left: 0px; right: 0px;"></div>
     <header>
         <img id="logo" src="images/google.png">
         <h1 id="title">Hide & Seek</h1>
     </header>
-
-    <div class="onoffswitch">
-        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch">
-        <label class="onoffswitch-label" for="myonoffswitch">
-        <span class="onoffswitch-inner"></span>
-        <span class="onoffswitch-switch"></span>
-    </label>
+    <div id="alert"></div>
+    <button class="accordion">Settings</button>
+    <div class="panel">
+        <div class="settings">
+            <input id="button1" type="checkbox"></input>
+            <label for="button1">Extension</label>
+        </div>
+        <div class="settings">
+            <input id="button2" type="checkbox"></input>
+            <label for="button2">Re-ranking</label>
+        </div>
+        <div class="settings">
+            <input type="text" name="numcover" id="numcover" size="2px" />
+            <label for="numcover"> cover queries per [2 ~ 8]</label>
+        </div>
+        <div class="settings">
+            <input type="text" name="smlt_to" id="smlt_to" size="2px" />
+            <label for="smlt_to"> seconds timeout [10 ~ 60]</label>
+        </div>
     </div>
-    <!-- <div id="cp">
-        <a href="visualization.html" target="_blank">Privacy is one click away.</a>
-    </div> -->
+
     <div id="viz">
         <canvas id="my_canvas" />
         <script src="scripts/springy-viz.js"></script>

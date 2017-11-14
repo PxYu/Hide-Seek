@@ -13,6 +13,9 @@ var initialize_state = function() {
     bgp.popupSettings.numcover = popupSettings.numcover;
     bgp.popupSettings.smlt_to = popupSettings.smlt_to;
     if (!popupSettings.started) {
+        bgp.popupSettings.rerank = false;
+        popupSettings.rerank = false;
+        $("#button2").prop('checked', false);
         $("#button2").prop("disabled", true);
         $("#numcover").prop("disabled", true);
         $("#smlt_to").prop("disabled", true);

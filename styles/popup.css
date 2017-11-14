@@ -3,13 +3,6 @@ h3 {
     font-size: 14px;
 }
 
-
-/* h2 {
-    text-align: center;
-    font-size: 16px;
-    font-family: 'Poiret One', cursive;
-} */
-
 h1#title {
     text-align: center;
     font-size: 20px;
@@ -69,4 +62,57 @@ footer {
     border-bottom: 1px dashed grey;
     text-align: center;
     position: relative;
+}
+
+button.accordion {
+    background-color: Transparent;
+    border: none;
+    border-top: 1px dashed grey;
+    color: #444;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    outline: none;
+    transition: 0.4s;
+    font-size: 16px;
+    font-family: Times New Roman;
+}
+
+button.accordion:hover {
+    background-color: #ccc;
+}
+
+div.panel {
+    padding: 0 18px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+}
+
+button.accordion:after {
+    content: '\02795';
+    font-size: 13px;
+    color: #777;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2796";
+}
+
+.settings {
+    padding: 5px;
+    border-top: 1px dashed grey;
+}
+
+label {
+    line-height: 0;
+    font-family: Times New Roman;
+    font-size: 16px;
+}
+
+.alert {
+    margin-bottom: 0;
 }
