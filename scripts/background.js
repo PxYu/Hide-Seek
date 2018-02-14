@@ -164,10 +164,12 @@ var saveQueries = function() {
 var addQuery = function(queryCollection, query) {
     var splits = query.split(" ");
     $.each(splits, function(index, value) {
-        if (queryCollection.hasOwnProperty(value)) {
-            queryCollection[value] += 1;
-        } else {
-            queryCollection[value] = 1;
+        if (value != ""){
+            if (queryCollection.hasOwnProperty(value)) {
+                queryCollection[value] += 1;
+            } else {
+                queryCollection[value] = 1;
+            }
         }
     })
     saveQueries();

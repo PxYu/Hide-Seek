@@ -363,7 +363,7 @@ var generateddatacolumn = {
 var wc1 = {
     chart: {
         width: w,
-        height: 0.75 * w
+        height: 0.6*w
     },
     tooltip: {
         headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
@@ -382,7 +382,7 @@ var wc1 = {
 var wc2 = {
     chart: {
         width: w,
-        height: 0.75 * w,
+        height: 0.6*w,
         events: {
             load: function() {
                 //stop loading animation
