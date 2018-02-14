@@ -109,7 +109,7 @@ $(function() {
                                 $.each(block, function() {
                                     var tmp = $(this);
                                     console.log(tmp[0]);
-                                    $.each(items.slice(numInEachBlock[i], numInEachBlock[i + 1] - 1), function() {
+                                    $.each(items.slice(numInEachBlock[i], numInEachBlock[i + 1]), function() {
                                         tmp[0].append(this[0]);
                                         console.log(this[0]);
                                     })

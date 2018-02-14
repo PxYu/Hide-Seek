@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v5.0.14 (2017-07-28)
+ * @license Highcharts JS v6.0.6 (2018-02-05)
  *
  * (c) 2009-2016 Torstein Honsi
  *
@@ -19,6 +19,90 @@
          *
          * License: www.highcharts.com/license
          */
+        var deg2rad = H.deg2rad,
+            isNumber = H.isNumber,
+            pick = H.pick,
+            relativeLength = H.relativeLength;
+        H.CenteredSeriesMixin = {
+            /**
+             * Get the center of the pie based on the size and center options relative
+             * to the plot area. Borrowed by the polar and gauge series types.
+             */
+            getCenter: function() {
+
+                var options = this.options,
+                    chart = this.chart,
+                    slicingRoom = 2 * (options.slicedOffset || 0),
+                    handleSlicingRoom,
+                    plotWidth = chart.plotWidth - 2 * slicingRoom,
+                    plotHeight = chart.plotHeight - 2 * slicingRoom,
+                    centerOption = options.center,
+                    positions = [
+                        pick(centerOption[0], '50%'),
+                        pick(centerOption[1], '50%'),
+                        options.size || '100%',
+                        options.innerSize || 0
+                    ],
+                    smallestSize = Math.min(plotWidth, plotHeight),
+                    i,
+                    value;
+
+                for (i = 0; i < 4; ++i) {
+                    value = positions[i];
+                    handleSlicingRoom = i < 2 || (i === 2 && /%$/.test(value));
+
+                    // i == 0: centerX, relative to width
+                    // i == 1: centerY, relative to height
+                    // i == 2: size, relative to smallestSize
+                    // i == 3: innerSize, relative to size
+                    positions[i] = relativeLength(
+                        value, [plotWidth, plotHeight, smallestSize, positions[2]][i]
+                    ) + (handleSlicingRoom ? slicingRoom : 0);
+
+                }
+                // innerSize cannot be larger than size (#3632)
+                if (positions[3] > positions[2]) {
+                    positions[3] = positions[2];
+                }
+                return positions;
+            },
+            /**
+             * getStartAndEndRadians - Calculates start and end angles in radians.
+             * Used in series types such as pie and sunburst.
+             *
+             * @param  {Number} start Start angle in degrees.
+             * @param  {Number} end Start angle in degrees.
+             * @return {object} Returns an object containing start and end angles as
+             * radians.
+             */
+            getStartAndEndRadians: function getStartAndEndRadians(start, end) {
+                var startAngle = isNumber(start) ? start : 0, // must be a number
+                    endAngle = (
+                        (
+                            isNumber(end) && // must be a number
+                            end > startAngle && // must be larger than the start angle
+                            // difference must be less than 360 degrees
+                            (end - startAngle) < 360
+                        ) ?
+                        end :
+                        startAngle + 360
+                    ),
+                    correction = -90;
+                return {
+                    start: deg2rad * (startAngle + correction),
+                    end: deg2rad * (endAngle + correction)
+                };
+            }
+        };
+
+    }(Highcharts));
+    (function(H) {
+        /**
+         * (c) 2010-2017 Torstein Honsi
+         *
+         * License: www.highcharts.com/license
+         */
+        /* eslint max-len: 0 */
         var CenteredSeriesMixin = H.CenteredSeriesMixin,
             each = H.each,
             extend = H.extend,
@@ -138,11 +222,24 @@
             },
 
             /**
-             * The default options object
+             * The pane serves as a container for axes and backgrounds for circular 
+             * gauges and polar charts.
+             * @since 2.3.0
              * @optionparent pane
              */
             defaultOptions: {
-                // background: {conditional},
+
+                /**
+                 * The end angle of the polar X axis or gauge value axis, given in degrees
+                 * where 0 is north. Defaults to [startAngle](#pane.startAngle) + 360.
+                 * 
+                 * @type {Number}
+                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/
+                 *         VU-meter with custom start and end angle
+                 * @since 2.3.0
+                 * @product highcharts
+                 * @apioption pane.endAngle
+                 */
 
                 /**
                  * The center of a polar chart or angular gauge, given as an array
@@ -150,7 +247,8 @@
                  * to pixels, or as percentages of the plot area size.
                  * 
                  * @type {Array<String|Number>}
-                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/ Two gauges with different center
+                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/
+                 *         Two gauges with different center
                  * @default ["50%", "50%"]
                  * @since 2.3.0
                  * @product highcharts
@@ -173,20 +271,33 @@
                  * where 0 is north. Defaults to 0.
                  * 
                  * @type {Number}
-                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/ VU-meter with custom start and end angle
+                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/
+                 *         VU-meter with custom start and end angle
                  * @since 2.3.0
                  * @product highcharts
                  */
                 startAngle: 0
-                //endAngle: startAngle + 360
             },
 
             /**
-             * The default background options
+             * An array of background items for the pane.
+             * @type Array.<Object>
+             * @sample {highcharts} highcharts/demo/gauge-speedometer/
+             *         Speedometer gauge with multiple backgrounds
              * @optionparent pane.background
              */
             defaultBackgroundOptions: {
-                //className: 'highcharts-pane',
+                /**
+                 * The class name for this background.
+                 * 
+                 * @type {String}
+                 * @sample {highcharts} highcharts/css/pane/ Panes styled by CSS
+                 * @sample {highstock} highcharts/css/pane/ Panes styled by CSS
+                 * @sample {highmaps} highcharts/css/pane/ Panes styled by CSS
+                 * @default highcharts-pane
+                 * @since 5.0.0
+                 * @apioption pane.background.className
+                 */
 
                 /**
                  * Tha shape of the pane background. When `solid`, the background
@@ -202,8 +313,7 @@
                 shape: 'circle',
 
 
-                /**
-                 */
+                /** @ignore */
                 from: -Number.MAX_VALUE, // corrected to axis min
 
                 /**
@@ -217,8 +327,7 @@
                  */
                 innerRadius: 0,
 
-                /**
-                 */
+                /** @ignore */
                 to: Number.MAX_VALUE, // corrected to axis max
 
                 /**
@@ -282,6 +391,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var Axis = H.Axis,
             each = H.each,
             extend = H.extend,
@@ -350,7 +460,10 @@
                     align: null, // auto
                     distance: 15,
                     x: 0,
-                    y: null // auto
+                    y: null, // auto
+                    style: {
+                        textOverflow: 'none' // wrap lines by default (#7248)
+                    }
                 },
                 maxPadding: 0,
                 minPadding: 0,
@@ -429,6 +542,12 @@
                             innerR: 0
                         }
                     );
+
+                    // Bounds used to position the plotLine label next to the line
+                    // (#7117)
+                    path.xBounds = [this.left + center[0]];
+                    path.yBounds = [this.top + center[1] - r];
+
                 } else {
                     end = this.postTranslate(this.angleRad, r);
                     path = ['M', center[0] + chart.plotLeft, center[1] + chart.plotTop, 'L', end.x, end.y];
@@ -693,8 +812,8 @@
                 options,
                 chartOptions = chart.options,
                 paneIndex = userOptions.pane || 0,
-                pane = this.pane = chart.pane[paneIndex],
-                paneOptions = pane.options;
+                pane = this.pane = chart.pane && chart.pane[paneIndex],
+                paneOptions = pane && pane.options;
 
             // Before prototype.init
             if (angular) {
@@ -721,14 +840,14 @@
             }
 
             // A pointer back to this axis to borrow geometry
-            if (isCircular) {
+            if (pane && isCircular) {
                 pane.axis = this;
             }
 
             // Run prototype.init
             proceed.call(this, chart, userOptions);
 
-            if (!isHidden && (angular || polar)) {
+            if (!isHidden && pane && (angular || polar)) {
                 options = this.options;
 
                 // Start and end angle options are
@@ -854,6 +973,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var each = H.each,
             noop = H.noop,
             pick = H.pick,
@@ -864,22 +984,25 @@
             seriesProto = Series.prototype,
             pointProto = H.Point.prototype;
 
-        // The arearangeseries series type
-
-
         /**
-         * @extends plotOptions.area
+         * The area range series is a carteseian series with higher and lower values
+         * for each point along an X axis, where the area between the values is shaded.
+         * Requires `highcharts-more.js`.
+         * 
+         * @extends      plotOptions.area
+         * @product      highcharts highstock
+         * @sample       {highcharts} highcharts/demo/arearange/
+         *               Area range chart
+         * @sample       {highstock} stock/demo/arearange/
+         *               Area range chart
+         * @excluding    stack,stacking
          * @optionparent plotOptions.arearange
          */
         seriesType('arearange', 'area', {
 
 
-            /**
-             */
             threshold: null,
 
-            /**
-             */
             tooltip: {
 
                 pointFormat: '<span class="highcharts-color-{series.colorIndex}">\u25CF</span> {series.name}: <b>{point.low}</b> - <b>{point.high}</b><br/>'
@@ -890,9 +1013,7 @@
              * Whether the whole area or just the line should respond to mouseover
              * tooltips and other mouse or touch events.
              * 
-             * @type {Boolean}
-             * @default true
-             * @since 2.3.0
+             * @since   2.3.0
              * @product highcharts highstock
              */
             trackByArea: true,
@@ -903,30 +1024,25 @@
              * `yLow` and `yHigh` options to allow the higher and lower data label
              * sets individually.
              * 
-             * @type {Object}
-             * @extends plotOptions.series.dataLabels
+             * @type      {Object}
+             * @extends   plotOptions.series.dataLabels
              * @excluding x,y
-             * @since 2.3.0
-             * @product highcharts highstock
+             * @since     2.3.0
+             * @product   highcharts highstock
              */
             dataLabels: {
 
-                /**
-                 */
                 align: null,
-
-                /**
-                 */
                 verticalAlign: null,
 
                 /**
                  * X offset of the lower data labels relative to the point value.
                  * 
-                 * @type {Number}
-                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
-                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
-                 * @default 0
-                 * @since 2.3.0
+                 * @sample  {highcharts} highcharts/plotoptions/arearange-datalabels/
+                 *          Data labels on range series
+                 * @sample  {highstock} highcharts/plotoptions/arearange-datalabels/
+                 *          Data labels on range series
+                 * @since   2.3.0
                  * @product highcharts highstock
                  */
                 xLow: 0,
@@ -934,11 +1050,10 @@
                 /**
                  * X offset of the higher data labels relative to the point value.
                  * 
-                 * @type {Number}
-                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
-                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
-                 * @default 0
-                 * @since 2.3.0
+                 * @sample  {highcharts|highstock}
+                 *          highcharts/plotoptions/arearange-datalabels/
+                 *          Data labels on range series
+                 * @since   2.3.0
                  * @product highcharts highstock
                  */
                 xHigh: 0,
@@ -946,27 +1061,37 @@
                 /**
                  * Y offset of the lower data labels relative to the point value.
                  * 
-                 * @type {Number}
-                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
-                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @sample  {highcharts|highstock}
+                 *          highcharts/plotoptions/arearange-datalabels/
+                 *          Data labels on range series
                  * @default 16
-                 * @since 2.3.0
+                 * @since   2.3.0
                  * @product highcharts highstock
                  */
                 yLow: 0,
 
                 /**
                  * Y offset of the higher data labels relative to the point value.
-                 * 
-                 * @type {Number}
-                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
-                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 *
+                 * @sample  {highcharts|highstock}
+                 *          highcharts/plotoptions/arearange-datalabels/
+                 *          Data labels on range series
                  * @default -6
-                 * @since 2.3.0
+                 * @since   2.3.0
                  * @product highcharts highstock
                  */
                 yHigh: 0
             }
+
+            /**
+             * Whether to apply a drop shadow to the graph line. Since 2.3 the shadow
+             * can be an object configuration containing `color`, `offsetX`, `offsetY`,
+             * `opacity` and `width`.
+             * 
+             * @type      {Boolean|Object}
+             * @product   highcharts
+             * @apioption plotOptions.arearange.shadow
+             */
 
             // Prototype members
         }, {
@@ -979,14 +1104,18 @@
             deferTranslatePolar: true,
 
             /**
-             * Translate a point's plotHigh from the internal angle and radius measures to
-             * true plotHigh coordinates. This is an addition of the toXY method found in
-             * Polar.js, because it runs too early for arearanges to be considered (#3419).
+             * Translate a point's plotHigh from the internal angle and radius
+             * measures to true plotHigh coordinates. This is an addition of the
+             * toXY method found in Polar.js, because it runs too early for
+             * arearanges to be considered (#3419).
              */
             highToXY: function(point) {
                 // Find the polar plotX and plotY
                 var chart = this.chart,
-                    xy = this.xAxis.postTranslate(point.rectPlotX, this.yAxis.len - point.plotHigh);
+                    xy = this.xAxis.postTranslate(
+                        point.rectPlotX,
+                        this.yAxis.len - point.plotHigh
+                    );
                 point.plotHighX = xy.x - chart.plotLeft;
                 point.plotHigh = xy.y - chart.plotTop;
                 point.plotLowX = point.plotX;
@@ -1063,9 +1192,11 @@
                 points = points || this.points;
                 i = points.length;
 
-                // Create the top line and the top part of the area fill. The area fill compensates for 
-                // null points by drawing down to the lower graph, moving across the null gap and 
-                // starting again at the lower graph.
+                /**
+                 * Create the top line and the top part of the area fill. The area
+                 * fill compensates for null points by drawing down to the lower graph,
+                 * moving across the null gap and starting again at the lower graph.
+                 */
                 i = points.length;
                 while (i--) {
                     point = points[i];
@@ -1086,7 +1217,8 @@
                         polarPlotY: point.polarPlotY,
                         rectPlotX: point.rectPlotX,
                         yBottom: point.yBottom,
-                        plotX: pick(point.plotHighX, point.plotX), // plotHighX is for polar charts
+                        // plotHighX is for polar charts
+                        plotX: pick(point.plotHighX, point.plotX),
                         plotY: point.plotHigh,
                         isNull: point.isNull
                     };
@@ -1127,13 +1259,14 @@
                 // Create a line on both top and bottom of the range
                 linePath = [].concat(lowerPath, higherPath);
 
-                // For the area path, we need to change the 'move' statement into 'lineTo' or 'curveTo'
+                // For the area path, we need to change the 'move' statement
+                // into 'lineTo' or 'curveTo'
                 if (!this.chart.polar && higherAreaPath[0] === 'M') {
                     higherAreaPath[0] = 'L'; // this probably doesn't work for spline			
                 }
 
                 this.graphPath = linePath;
-                this.areaPath = this.areaPath.concat(lowerPath, higherAreaPath);
+                this.areaPath = lowerPath.concat(higherAreaPath);
 
                 // Prepare for sideways animation
                 linePath.isArea = true;
@@ -1144,8 +1277,8 @@
             },
 
             /**
-             * Extend the basic drawDataLabels method by running it for both lower and higher
-             * values.
+             * Extend the basic drawDataLabels method by running it for both lower
+             * and higher values.
              */
             drawDataLabels: function() {
 
@@ -1163,20 +1296,23 @@
 
                 if (dataLabelOptions.enabled || this._hasPointLabels) {
 
-                    // Step 1: set preliminary values for plotY and dataLabel and draw the upper labels
+                    // Step 1: set preliminary values for plotY and dataLabel
+                    // and draw the upper labels
                     i = length;
                     while (i--) {
                         point = data[i];
                         if (point) {
-                            up = inside ? point.plotHigh < point.plotLow : point.plotHigh > point.plotLow;
+                            up = inside ?
+                                point.plotHigh < point.plotLow :
+                                point.plotHigh > point.plotLow;
 
                             // Set preliminary values
                             point.y = point.high;
                             point._plotY = point.plotY;
                             point.plotY = point.plotHigh;
 
-                            // Store original data labels and set preliminary label objects to be picked up
-                            // in the uber method
+                            // Store original data labels and set preliminary label
+                            // objects to be picked up in the uber method
                             originalDataLabels[i] = point.dataLabel;
                             point.dataLabel = point.dataLabelUpper;
 
@@ -1188,7 +1324,9 @@
                                 }
                             } else {
                                 if (!verticalAlign) {
-                                    dataLabelOptions.verticalAlign = up ? 'top' : 'bottom';
+                                    dataLabelOptions.verticalAlign = up ?
+                                        'top' :
+                                        'bottom';
                                 }
                             }
 
@@ -1206,9 +1344,12 @@
                     while (i--) {
                         point = data[i];
                         if (point) {
-                            up = inside ? point.plotHigh < point.plotLow : point.plotHigh > point.plotLow;
+                            up = inside ?
+                                point.plotHigh < point.plotLow :
+                                point.plotHigh > point.plotLow;
 
-                            // Move the generated labels from step 1, and reassign the original data labels
+                            // Move the generated labels from step 1, and reassign
+                            // the original data labels
                             point.dataLabelUpper = point.dataLabel;
                             point.dataLabel = originalDataLabels[i];
 
@@ -1224,7 +1365,9 @@
                                 }
                             } else {
                                 if (!verticalAlign) {
-                                    dataLabelOptions.verticalAlign = up ? 'bottom' : 'top';
+                                    dataLabelOptions.verticalAlign = up ?
+                                        'bottom' :
+                                        'top';
                                 }
 
                             }
@@ -1266,6 +1409,16 @@
                     if (defined(point.plotHighX)) {
                         point.plotX = point.plotHighX;
                     }
+                    point._isInside = point.isInside;
+                    if (!series.chart.polar) {
+                        point.isInside = point.isTopInside = (
+                            point.plotY !== undefined &&
+                            point.plotY >= 0 &&
+                            point.plotY <= series.yAxis.len && // #3519
+                            point.plotX >= 0 &&
+                            point.plotX <= series.xAxis.len
+                        );
+                    }
                     i++;
                 }
 
@@ -1277,6 +1430,7 @@
                     point = series.points[i];
                     point.upperGraphic = point.graphic;
                     point.graphic = point.lowerGraphic;
+                    point.isInside = point._isInside;
                     point.plotY = point._plotY;
                     point.plotX = point._plotX;
                     i++;
@@ -1301,8 +1455,10 @@
                     this.plotLow = this.plotY = series.yAxis.toPixels(this.low, true);
                 }
 
-                // Bottom state:
-                pointProto.setState.apply(this, arguments);
+                if (series.stateMarkerGraphic) {
+                    series.lowerStateMarkerGraphic = series.stateMarkerGraphic;
+                    series.stateMarkerGraphic = series.upperStateMarkerGraphic;
+                }
 
                 // Change state also for the top marker
                 this.graphic = this.upperGraphic;
@@ -1312,14 +1468,10 @@
                     this.plotX = this.plotHighX;
                 }
 
-                this.state = prevState;
-
-                if (series.stateMarkerGraphic) {
-                    series.lowerStateMarkerGraphic = series.stateMarkerGraphic;
-                    series.stateMarkerGraphic = series.upperStateMarkerGraphic;
-                }
-
+                // Top state:
                 pointProto.setState.apply(this, arguments);
+
+                this.state = prevState;
 
                 // Now restore defaults
                 this.plotY = this.plotLow;
@@ -1332,7 +1484,13 @@
                 if (series.stateMarkerGraphic) {
                     series.upperStateMarkerGraphic = series.stateMarkerGraphic;
                     series.stateMarkerGraphic = series.lowerStateMarkerGraphic;
+                    // Lower marker is stored at stateMarkerGraphic
+                    // to avoid reference duplication (#7021)
+                    series.lowerStateMarkerGraphic = undefined;
                 }
+
+                pointProto.setState.apply(this, arguments);
+
             },
             haloPath: function() {
                 var isPolar = this.series.chart.polar,
@@ -1344,26 +1502,137 @@
                     this.plotX = this.plotLowX;
                 }
 
-                path = pointProto.haloPath.apply(this, arguments);
+                if (this.isInside) {
+                    path = pointProto.haloPath.apply(this, arguments);
+                }
 
                 // Top halo
                 this.plotY = this.plotHigh;
                 if (isPolar) {
                     this.plotX = this.plotHighX;
                 }
-                path = path.concat(
-                    pointProto.haloPath.apply(this, arguments)
-                );
+                if (this.isTopInside) {
+                    path = path.concat(
+                        pointProto.haloPath.apply(this, arguments)
+                    );
+                }
 
                 return path;
             },
-            destroy: function() {
-                if (this.upperGraphic) {
-                    this.upperGraphic = this.upperGraphic.destroy();
-                }
-                return pointProto.destroy.apply(this, arguments);
+            destroyElements: function() {
+                var graphics = ['lowerGraphic', 'upperGraphic'];
+
+                each(graphics, function(graphicName) {
+                    if (this[graphicName]) {
+                        this[graphicName] = this[graphicName].destroy();
+                    }
+                }, this);
+
+                // Clear graphic for states, removed in the above each:
+                this.graphic = null;
+
+                return pointProto.destroyElements.apply(this, arguments);
             }
         });
+
+
+        /**
+         * A `arearange` series. If the [type](#series.arearange.type) option
+         * is not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to [plotOptions.
+         * arearange](#plotOptions.arearange).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.arearange
+         * @excluding dataParser,dataURL,stack,stacking
+         * @product   highcharts highstock
+         * @apioption series.arearange
+         */
+
+        /**
+         * An array of data points for the series. For the `arearange` series
+         * type, points can be given in the following ways:
+         * 
+         * 1.  An array of arrays with 3 or 2 values. In this case, the values
+         * correspond to `x,low,high`. If the first value is a string, it is
+         * applied as the name of the point, and the `x` value is inferred.
+         * The `x` value can also be omitted, in which case the inner arrays
+         * should be of length 2\. Then the `x` value is automatically calculated,
+         * either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 8, 3],
+         *         [1, 1, 1],
+         *         [2, 6, 8]
+         *     ]
+         *  ```
+         * 
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series'
+         * [turboThreshold](#series.arearange.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         low: 9,
+         *         high: 0,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         low: 3,
+         *         high: 4,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type      {Array<Object|Array>}
+         * @extends   series.line.data
+         * @excluding marker,y
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects
+         * @product   highcharts highstock
+         * @apioption series.arearange.data
+         */
+
+        /**
+         * The high or maximum value for each data point.
+         * 
+         * @type      {Number}
+         * @product   highcharts highstock
+         * @apioption series.arearange.data.high
+         */
+
+        /**
+         * The low or minimum value for each data point.
+         * 
+         * @type      {Number}
+         * @product   highcharts highstock
+         * @apioption series.arearange.data.low
+         */
+
+        /**
+         * @excluding x,y
+         * @product   highcharts highstock
+         * @apioption series.arearange.dataLabels
+         */
 
     }(Highcharts));
     (function(H) {
@@ -1377,11 +1646,95 @@
             seriesTypes = H.seriesTypes;
 
         /**
-         * The areasplinerange series type
+         * The area spline range is a cartesian series type with higher and
+         * lower Y values along an X axis. The area inside the range is colored, and
+         * the graph outlining the area is a smoothed spline. Requires
+         * `highcharts-more.js`.
+         * 
+         * @extends   plotOptions.arearange
+         * @excluding step
+         * @since     2.3.0
+         * @sample    {highstock|highstock} stock/demo/areasplinerange/
+         *            Area spline range
+         * @product   highcharts highstock
+         * @apioption plotOptions.areasplinerange
          */
         seriesType('areasplinerange', 'arearange', null, {
             getPointSpline: seriesTypes.spline.prototype.getPointSpline
         });
+
+        /**
+         * A `areasplinerange` series. If the [type](#series.areasplinerange.type)
+         * option is not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to [plotOptions.
+         * areasplinerange](#plotOptions.areasplinerange).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.areasplinerange
+         * @excluding dataParser,dataURL,stack
+         * @product   highcharts highstock
+         * @apioption series.areasplinerange
+         */
+
+        /**
+         * An array of data points for the series. For the `areasplinerange`
+         * series type, points can be given in the following ways:
+         * 
+         * 1.  An array of arrays with 3 or 2 values. In this case, the values
+         * correspond to `x,low,high`. If the first value is a string, it is
+         * applied as the name of the point, and the `x` value is inferred.
+         * The `x` value can also be omitted, in which case the inner arrays
+         * should be of length 2\. Then the `x` value is automatically calculated,
+         * either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 0, 5],
+         *         [1, 9, 1],
+         *         [2, 5, 2]
+         *     ]
+         *  ```
+         * 
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.areasplinerange.
+         * turboThreshold), this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         low: 5,
+         *         high: 0,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         low: 4,
+         *         high: 1,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type      {Array<Object|Array>}
+         * @extends   series.arearange.data
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects
+         * @product   highcharts highstock
+         * @apioption series.areasplinerange.data
+         */
 
     }(Highcharts));
     (function(H) {
@@ -1390,6 +1743,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var defaultPlotOptions = H.defaultPlotOptions,
             each = H.each,
             merge = H.merge,
@@ -1400,33 +1754,43 @@
 
         var colProto = seriesTypes.column.prototype;
         /**
-         * @extends {plotOptions.arearange}
-         * @optionparent plotOptions.columrange
+         * The column range is a cartesian series type with higher and lower
+         * Y values along an X axis. Requires `highcharts-more.js`. To display
+         * horizontal bars, set [chart.inverted](#chart.inverted) to `true`.
+         *
+         * @type         {Object}
+         * @extends      plotOptions.column
+         * @excluding    negativeColor,stacking,softThreshold,threshold
+         * @sample       {highcharts|highstock} highcharts/demo/columnrange/
+         *               Inverted column range
+         * @since        2.3.0
+         * @product      highcharts highstock
+         * @optionparent plotOptions.columnrange
          */
         var columnRangeOptions = {
 
             /**
+             * Extended data labels for range series types. Range series data labels
+             * have no `x` and `y` options. Instead, they have `xLow`, `xHigh`,
+             * `yLow` and `yHigh` options to allow the higher and lower data label
+             * sets individually.
+             *
+             * @type      {Object}
+             * @extends   plotOptions.arearange.dataLabels
+             * @excluding x,y
+             * @since     2.3.0
+             * @product   highcharts highstock
+             * @apioption plotOptions.columnrange.dataLabels
              */
-            lineWidth: 1,
 
-            /**
-             */
             pointRange: null,
 
-            /**
-             */
+            /** @ignore-option */
             marker: null,
 
-            /**
-             */
             states: {
-
-                /**
-                 */
                 hover: {
-
-                    /**
-                     */
+                    /** @ignore-option */
                     halo: false
                 }
             }
@@ -1498,7 +1862,12 @@
                         start = point.barX + startAngleRad;
                         point.shapeType = 'path';
                         point.shapeArgs = {
-                            d: series.polarArc(y + height, y, start, start + point.pointWidth)
+                            d: series.polarArc(
+                                y + height,
+                                y,
+                                start,
+                                start + point.pointWidth
+                            )
                         };
                     } else {
 
@@ -1527,16 +1896,112 @@
             drawPoints: colProto.drawPoints,
             drawTracker: colProto.drawTracker,
             getColumnMetrics: colProto.getColumnMetrics,
+            pointAttribs: colProto.pointAttribs,
+
+            // Overrides from modules that may be loaded after this module
             animate: function() {
                 return colProto.animate.apply(this, arguments);
             },
             polarArc: function() {
                 return colProto.polarArc.apply(this, arguments);
             },
-            pointAttribs: colProto.pointAttribs
+            translate3dPoints: function() {
+                return colProto.translate3dPoints.apply(this, arguments);
+            },
+            translate3dShapes: function() {
+                return colProto.translate3dShapes.apply(this, arguments);
+            }
         }, {
             setState: colProto.pointClass.prototype.setState
         });
+
+
+        /**
+         * A `columnrange` series. If the [type](#series.columnrange.type)
+         * option is not specified, it is inherited from
+         * [chart.type](#chart.type).
+         *
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to [plotOptions.
+         * columnrange](#plotOptions.columnrange).
+         *
+         * @type      {Object}
+         * @extends   series,plotOptions.columnrange
+         * @excluding dataParser,dataURL,stack,stacking
+         * @product   highcharts highstock
+         * @apioption series.columnrange
+         */
+
+        /**
+         * An array of data points for the series. For the `columnrange` series
+         * type, points can be given in the following ways:
+         *
+         * 1.  An array of arrays with 3 or 2 values. In this case, the values
+         * correspond to `x,low,high`. If the first value is a string, it is
+         * applied as the name of the point, and the `x` value is inferred.
+         * The `x` value can also be omitted, in which case the inner arrays
+         * should be of length 2\. Then the `x` value is automatically calculated,
+         * either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options.
+         *
+         *  ```js
+         *     data: [
+         *         [0, 4, 2],
+         *         [1, 2, 1],
+         *         [2, 9, 10]
+         *     ]
+         *  ```
+         *
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.columnrange.
+         * turboThreshold), this option is not available.
+         *
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         low: 0,
+         *         high: 4,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         low: 5,
+         *         high: 3,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         *
+         * @type      {Array<Object|Array>}
+         * @extends   series.arearange.data
+         * @excluding marker
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects    
+         * @product   highcharts highstock
+         * @apioption series.columnrange.data
+         */
+
+        /**
+         * @excluding halo,lineWidth,lineWidthPlus,marker
+         * @product   highcharts highstock
+         * @apioption series.columnrange.states.hover
+         */
+
+        /**
+         * @excluding halo,lineWidth,lineWidthPlus,marker
+         * @product   highcharts highstock
+         * @apioption series.columnrange.states.select
+         */
 
     }(Highcharts));
     (function(H) {
@@ -1545,6 +2010,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var each = H.each,
             isNumber = H.isNumber,
             merge = H.merge,
@@ -1557,8 +2023,16 @@
 
 
         /** 
-         * The GaugeSeries class
-         * @extends {plotOptions.line}
+         * Gauges are circular plots displaying one or more values with a dial pointing
+         * to values along the perimeter.
+         *
+         * @sample       highcharts/demo/gauge-speedometer/ Gauge chart
+         * @extends      {plotOptions.line}
+         * @excluding    animationLimit,boostThreshold,connectEnds,connectNulls,
+         *               cropThreshold,dashStyle,findNearestPointBy,getExtremesFromAll,
+         *               marker,negativeColor,pointPlacement,shadow,softThreshold,
+         *               stacking,states,step,threshold,turboThreshold,zoneAxis,zones
+         * @product      highcharts
          * @optionparent plotOptions.gauge
          */
         seriesType('gauge', 'line', {
@@ -1567,9 +2041,9 @@
              * Data labels for the gauge. For gauges, the data labels are enabled
              * by default and shown in a bordered box below the point.
              * 
-             * @type {Object}
+             * @type    {Object}
              * @extends plotOptions.series.dataLabels
-             * @since 2.3.0
+             * @since   2.3.0
              * @product highcharts
              */
             dataLabels: {
@@ -1577,23 +2051,18 @@
                 /**
                  * Enable or disable the data labels.
                  * 
-                 * @type {Boolean}
-                 * @since 2.3.0
+                 * @since   2.3.0
                  * @product highcharts highmaps
                  */
                 enabled: true,
 
-                /**
-                 */
                 defer: false,
 
                 /**
                  * The y position offset of the label relative to the center of the
                  * gauge.
                  * 
-                 * @type {Number}
-                 * @default 15
-                 * @since 2.3.0
+                 * @since   2.3.0
                  * @product highcharts highmaps
                  */
                 y: 15,
@@ -1601,22 +2070,16 @@
                 /**
                  * The border radius in pixels for the gauge's data label.
                  * 
-                 * @type {Number}
-                 * @default 3
-                 * @since 2.3.0
+                 * @since   2.3.0
                  * @product highcharts highmaps
                  */
                 borderRadius: 3,
 
-                /**
-                 */
                 crop: false,
 
                 /**
                  * The vertical alignment of the data label.
                  * 
-                 * @type {String}
-                 * @default top
                  * @product highcharts highmaps
                  */
                 verticalAlign: 'top',
@@ -1625,9 +2088,7 @@
                  * The Z index of the data labels. A value of 2 display them behind
                  * the dial.
                  * 
-                 * @type {Number}
-                 * @default 2
-                 * @since 2.1.5
+                 * @since   2.1.5
                  * @product highcharts highmaps
                  */
                 zIndex: 2
@@ -1637,48 +2098,131 @@
             /**
              * Options for the dial or arrow pointer of the gauge.
              * 
-             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
-             * style/style-by-css), the dial is styled with the `.highcharts-gauge-
-             * series .highcharts-dial` rule.
+             * In styled mode, the dial is styled with the
+             * `.highcharts-gauge-series .highcharts-dial` rule.
              * 
-             * @type {Object}
-             * @sample {highcharts} highcharts/css/gauge/ Styled mode
-             * @since 2.3.0
+             * @type    {Object}
+             * @sample  {highcharts} highcharts/css/gauge/ Styled mode
+             * @since   2.3.0
              * @product highcharts
              */
+
+
             dial: {
-                // radius: '80%',
-                // baseWidth: 3,
-                // topWidth: 1,
-                // baseLength: '70%' // of radius
-                // rearLength: '10%'
+
+                /**
+                 * The length of the dial's base part, relative to the total radius
+                 * or length of the dial.
+                 * 
+                 * @type      {String}
+                 * @sample    {highcharts} highcharts/plotoptions/gauge-dial/
+                 *            Dial options demonstrated
+                 * @default   70%
+                 * @since     2.3.0
+                 * @product   highcharts
+                 * @apioption plotOptions.gauge.dial.baseLength
+                 */
+
+                /**
+                 * The pixel width of the base of the gauge dial. The base is the part
+                 * closest to the pivot, defined by baseLength.
+                 * 
+                 * @type      {Number}
+                 * @sample    {highcharts} highcharts/plotoptions/gauge-dial/
+                 *            Dial options demonstrated
+                 * @default   3
+                 * @since     2.3.0
+                 * @product   highcharts
+                 * @apioption plotOptions.gauge.dial.baseWidth
+                 */
+
+                /**
+                 * The radius or length of the dial, in percentages relative to the
+                 * radius of the gauge itself.
+                 * 
+                 * @type      {String}
+                 * @sample    {highcharts} highcharts/plotoptions/gauge-dial/
+                 *            Dial options demonstrated
+                 * @default   80%
+                 * @since     2.3.0
+                 * @product   highcharts
+                 * @apioption plotOptions.gauge.dial.radius
+                 */
+
+                /**
+                 * The length of the dial's rear end, the part that extends out on the
+                 * other side of the pivot. Relative to the dial's length.
+                 * 
+                 * @type      {String}
+                 * @sample    {highcharts} highcharts/plotoptions/gauge-dial/
+                 *            Dial options demonstrated
+                 * @default   10%
+                 * @since     2.3.0
+                 * @product   highcharts
+                 * @apioption plotOptions.gauge.dial.rearLength
+                 */
+
+                /**
+                 * The width of the top of the dial, closest to the perimeter. The pivot
+                 * narrows in from the base to the top.
+                 * 
+                 * @type      {Number}
+                 * @sample    {highcharts} highcharts/plotoptions/gauge-dial/
+                 *            Dial options demonstrated
+                 * @default   1
+                 * @since     2.3.0
+                 * @product   highcharts
+                 * @apioption plotOptions.gauge.dial.topWidth
+                 */
+
 
 
             },
+
+            /**
+             * Allow the dial to overshoot the end of the perimeter axis by this
+             * many degrees. Say if the gauge axis goes from 0 to 60, a value of
+             * 100, or 1000, will show 5 degrees beyond the end of the axis.
+             * 
+             * @type      {Number}
+             * @see       [wrap](#plotOptions.gauge.wrap)
+             * @sample    {highcharts} highcharts/plotoptions/gauge-overshoot/
+             *            Allow 5 degrees overshoot
+             * @default   0
+             * @since     3.0.10
+             * @product   highcharts
+             * @apioption plotOptions.gauge.overshoot
+             */
 
             /**
              * Options for the pivot or the center point of the gauge.
              * 
-             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
-             * style/style-by-css), the pivot is styled with the `.highcharts-gauge-
-             * series .highcharts-pivot` rule.
+             * In styled mode, the pivot is styled with the
+             * `.highcharts-gauge-series .highcharts-pivot` rule.
              * 
-             * @type {Object}
-             * @sample {highcharts} highcharts/css/gauge/ Styled mode
-             * @since 2.3.0
+             * @type    {Object}
+             * @sample  {highcharts} highcharts/css/gauge/ Styled mode
+             * @since   2.3.0
              * @product highcharts
              */
             pivot: {
-                //radius: 5
+
+                /**
+                 * The pixel radius of the pivot.
+                 * 
+                 * @type      {Number}
+                 * @sample    {highcharts} highcharts/plotoptions/gauge-pivot/
+                 *            Pivot options demonstrated
+                 * @default   5
+                 * @since     2.3.0
+                 * @product   highcharts
+                 * @apioption plotOptions.gauge.pivot.radius
+                 */
+
 
             },
 
-            /**
-             */
             tooltip: {
-
-                /**
-                 */
                 headerFormat: ''
             },
 
@@ -1686,16 +2230,30 @@
              * Whether to display this particular series or series type in the
              * legend. Defaults to false for gauge series.
              * 
-             * @type {Boolean}
-             * @since 2.3.0
+             * @since   2.3.0
              * @product highcharts
              */
             showInLegend: false
 
+            /**
+             * When this option is `true`, the dial will wrap around the axes. For
+             * instance, in a full-range gauge going from 0 to 360, a value of 400
+             * will point to 40\. When `wrap` is `false`, the dial stops at 360.
+             * 
+             * @type      {Boolean}
+             * @see       [overshoot](#plotOptions.gauge.overshoot)
+             * @default   true
+             * @since     3.0
+             * @product   highcharts
+             * @apioption plotOptions.gauge.wrap
+             */
+
+
+
             // Prototype members
         }, {
-            // chart.angular will be set to true when a gauge series is present, and this will
-            // be used on the axes
+            // chart.angular will be set to true when a gauge series is present,
+            // and this will be used on the axes
             angular: true,
             directTouch: true, // #5063
             drawGraph: noop,
@@ -1719,21 +2277,31 @@
                 each(series.points, function(point) {
 
                     var dialOptions = merge(options.dial, point.dial),
-                        radius = (pInt(pick(dialOptions.radius, 80)) * center[2]) / 200,
-                        baseLength = (pInt(pick(dialOptions.baseLength, 70)) * radius) / 100,
-                        rearLength = (pInt(pick(dialOptions.rearLength, 10)) * radius) / 100,
+                        radius = (pInt(pick(dialOptions.radius, 80)) * center[2]) /
+                        200,
+                        baseLength = (pInt(pick(dialOptions.baseLength, 70)) * radius) /
+                        100,
+                        rearLength = (pInt(pick(dialOptions.rearLength, 10)) * radius) /
+                        100,
                         baseWidth = dialOptions.baseWidth || 3,
                         topWidth = dialOptions.topWidth || 1,
                         overshoot = options.overshoot,
-                        rotation = yAxis.startAngleRad + yAxis.translate(point.y, null, null, null, true);
+                        rotation = yAxis.startAngleRad +
+                        yAxis.translate(point.y, null, null, null, true);
 
                     // Handle the wrap and overshoot options
                     if (isNumber(overshoot)) {
                         overshoot = overshoot / 180 * Math.PI;
-                        rotation = Math.max(yAxis.startAngleRad - overshoot, Math.min(yAxis.endAngleRad + overshoot, rotation));
+                        rotation = Math.max(
+                            yAxis.startAngleRad - overshoot,
+                            Math.min(yAxis.endAngleRad + overshoot, rotation)
+                        );
 
                     } else if (options.wrap === false) {
-                        rotation = Math.max(yAxis.startAngleRad, Math.min(yAxis.endAngleRad, rotation));
+                        rotation = Math.max(
+                            yAxis.startAngleRad,
+                            Math.min(yAxis.endAngleRad, rotation)
+                        );
                     }
 
                     rotation = rotation * 180 / Math.PI;
@@ -1785,7 +2353,8 @@
                     } else {
                         point.graphic = renderer[point.shapeType](shapeArgs)
                             .attr({
-                                rotation: shapeArgs.rotation, // required by VML when animation is false
+                                // required by VML when animation is false
+                                rotation: shapeArgs.rotation,
                                 zIndex: 1
                             })
                             .addClass('highcharts-dial')
@@ -1855,8 +2424,8 @@
             },
 
             /**
-             * Extend the basic setData method by running processData and generatePoints immediately,
-             * in order to access the points from the legend.
+             * Extend the basic setData method by running processData and generatePoints
+             * immediately, in order to access the points from the legend.
              */
             setData: function(data, redraw) {
                 Series.prototype.setData.call(this, data, false);
@@ -1882,6 +2451,68 @@
             }
         });
 
+        /**
+         * A `gauge` series. If the [type](#series.gauge.type) option is not
+         * specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to
+         * [plotOptions.gauge](#plotOptions.gauge).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.gauge
+         * @excluding dataParser,dataURL,stack,stacking
+         * @product   highcharts
+         * @apioption series.gauge
+         */
+
+        /**
+         * An array of data points for the series. For the `gauge` series type,
+         * points can be given in the following ways:
+         * 
+         * 1.  An array of numerical values. In this case, the numerical values
+         * will be interpreted as `y` options. Example:
+         * 
+         *  ```js
+         *  data: [0, 5, 3, 5]
+         *  ```
+         * 
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.gauge.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *     y: 6,
+         *     name: "Point2",
+         *     color: "#00FF00"
+         * }, {
+         *     y: 8,
+         *     name: "Point1",
+         *     color: "#FF00FF"
+         * }]</pre>
+         * 
+         * The typical gauge only contains a single data value.
+         * 
+         * @type      {Array<Object|Number>}
+         * @extends   series.line.data
+         * @excluding drilldown,marker,x
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects
+         * @product   highcharts
+         * @apioption series.gauge.data
+         */
+
     }(Highcharts));
     (function(H) {
         /**
@@ -1889,6 +2520,7 @@
          *
          * License: www.highcharts.com/license
          */
+
         var each = H.each,
             noop = H.noop,
             pick = H.pick,
@@ -1899,24 +2531,29 @@
          * The boxplot series type.
          *
          * @constructor seriesTypes.boxplot
-         * @augments seriesTypes.column
+         * @augments    seriesTypes.column
          */
 
         /**
-         * @extends {plotOptions.column}
+         * A box plot is a convenient way of depicting groups of data through their
+         * five-number summaries: the smallest observation (sample minimum), lower
+         * quartile (Q1), median (Q2), upper quartile (Q3), and largest observation
+         * (sample maximum).
+         * 
+         * @sample       highcharts/demo/box-plot/ Box plot
+         * @extends      {plotOptions.column}
+         * @product      highcharts
+         * @excluding    borderColor,borderRadius,borderWidth,groupZPadding,states
          * @optionparent plotOptions.boxplot
          */
         seriesType('boxplot', 'column', {
 
-            /**
-             */
             threshold: null,
 
-            /**
-             */
             tooltip: {
 
-                pointFormat: '<span class="highcharts-color-{point.colorIndex}">\u25CF</span> <b> {series.name}</b><br/>' +
+                pointFormat: '<span class="highcharts-color-{point.colorIndex}">' +
+                    '\u25CF</span> <b> {series.name}</b><br/>' +
                     'Maximum: {point.high}<br/>' +
                     'Upper quartile: {point.q3}<br/>' +
                     'Median: {point.median}<br/>' +
@@ -1930,21 +2567,25 @@
              * high values. It can be a numerical pixel value, or a percentage
              * value of the box width. Set `0` to disable whiskers.
              * 
-             * @type {Number|String}
-             * @sample {highcharts} highcharts/plotoptions/box-plot-styling/ True by default
-             * @default 50%
-             * @since 3.0
+             * @type    {Number|String}
+             * @sample  {highcharts} highcharts/plotoptions/box-plot-styling/
+             *          True by default
+             * @since   3.0
              * @product highcharts
              */
             whiskerLength: '50%'
 
 
         }, /** @lends seriesTypes.boxplot */ {
-            pointArrayMap: ['low', 'q1', 'median', 'q3', 'high'], // array point configs are mapped to this
+
+            // array point configs are mapped to this
+            pointArrayMap: ['low', 'q1', 'median', 'q3', 'high'],
             toYData: function(point) { // return a plain array for speedy calculation
                 return [point.low, point.q1, point.median, point.q3, point.high];
             },
-            pointValKey: 'high', // defines the top of the tracker
+
+            // defines the top of the tracker
+            pointValKey: 'high',
 
 
 
@@ -1967,7 +2608,9 @@
                 each(series.points, function(point) {
                     each(pointArrayMap, function(key) {
                         if (point[key] !== null) {
-                            point[key + 'Plot'] = yAxis.translate(point[key], 0, 1, 0, 1);
+                            point[key + 'Plot'] = yAxis.translate(
+                                point[key], 0, 1, 0, 1
+                            );
                         }
                     });
                 });
@@ -1977,7 +2620,7 @@
              * Draw the data points
              */
             drawPoints: function() {
-                var series = this, //state = series.state,
+                var series = this,
                     points = series.points,
                     options = series.options,
                     chart = series.chart,
@@ -1995,7 +2638,8 @@
                     left,
                     right,
                     halfWidth,
-                    doQuartiles = series.doQuartiles !== false, // error bar inherits this series type but doesn't do quartiles
+                    // error bar inherits this series type but doesn't do quartiles
+                    doQuartiles = series.doQuartiles !== false,
                     pointWiskerLength,
                     whiskerLength = series.options.whiskerLength;
 
@@ -2042,10 +2686,6 @@
                                 .addClass('highcharts-boxplot-median')
                                 .add(graphic);
                         }
-
-
-
-
 
 
 
@@ -2098,7 +2738,9 @@
                             crispCorr = (point.whiskers.strokeWidth() % 2) / 2;
                             highPlot = highPlot + crispCorr;
                             lowPlot = lowPlot + crispCorr;
-                            pointWiskerLength = (/%$/).test(whiskerLength) ? halfWidth * parseFloat(whiskerLength) / 100 : whiskerLength / 2;
+                            pointWiskerLength = (/%$/).test(whiskerLength) ?
+                                halfWidth * parseFloat(whiskerLength) / 100 :
+                                whiskerLength / 2;
                             point.whiskers[verb]({
                                 d: [
                                     // High whisker
@@ -2141,12 +2783,131 @@
             },
             setStackedPoints: noop // #3890
 
-
         });
 
-        /* ****************************************************************************
-         * End Box plot series code												*
-         *****************************************************************************/
+        /**
+         * A `boxplot` series. If the [type](#series.boxplot.type) option is
+         * not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to
+         * [plotOptions.boxplot](#plotOptions.boxplot).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.boxplot
+         * @excluding dataParser,dataURL,marker,stack,stacking,states
+         * @product   highcharts
+         * @apioption series.boxplot
+         */
+
+        /**
+         * An array of data points for the series. For the `boxplot` series
+         * type, points can be given in the following ways:
+         * 
+         * 1.  An array of arrays with 6 or 5 values. In this case, the values
+         * correspond to `x,low,q1,median,q3,high`. If the first value is a
+         * string, it is applied as the name of the point, and the `x` value
+         * is inferred. The `x` value can also be omitted, in which case the
+         * inner arrays should be of length 5\. Then the `x` value is automatically
+         * calculated, either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 3, 0, 10, 3, 5],
+         *         [1, 7, 8, 7, 2, 9],
+         *         [2, 6, 9, 5, 1, 3]
+         *     ]
+         *  ```
+         * 
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.boxplot.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         low: 4,
+         *         q1: 9,
+         *         median: 9,
+         *         q3: 1,
+         *         high: 10,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         low: 5,
+         *         q1: 7,
+         *         median: 3,
+         *         q3: 6,
+         *         high: 2,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type      {Array<Object|Array>}
+         * @extends   series.line.data
+         * @excluding marker
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects
+         * @product   highcharts
+         * @apioption series.boxplot.data
+         */
+
+        /**
+         * The `high` value for each data point, signifying the highest value
+         * in the sample set. The top whisker is drawn here.
+         * 
+         * @type      {Number}
+         * @product   highcharts
+         * @apioption series.boxplot.data.high
+         */
+
+        /**
+         * The `low` value for each data point, signifying the lowest value
+         * in the sample set. The bottom whisker is drawn here.
+         * 
+         * @type      {Number}
+         * @product   highcharts
+         * @apioption series.boxplot.data.low
+         */
+
+        /**
+         * The median for each data point. This is drawn as a line through the
+         * middle area of the box.
+         * 
+         * @type      {Number}
+         * @product   highcharts
+         * @apioption series.boxplot.data.median
+         */
+
+        /**
+         * The lower quartile for each data point. This is the bottom of the
+         * box.
+         * 
+         * @type      {Number}
+         * @product   highcharts
+         * @apioption series.boxplot.data.q1
+         */
+
+        /**
+         * The higher quartile for each data point. This is the top of the box.
+         * 
+         * @type      {Number}
+         * @product   highcharts
+         * @apioption series.boxplot.data.q3
+         */
 
     }(Highcharts));
     (function(H) {
@@ -2155,56 +2916,49 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var each = H.each,
             noop = H.noop,
             seriesType = H.seriesType,
             seriesTypes = H.seriesTypes;
 
-
-        /* ****************************************************************************
-         * Start error bar series code                                                *
-         *****************************************************************************/
-
         /**  
-         * @extends {plotOptions.boxplot}
+         * Error bars are a graphical representation of the variability of data and are
+         * used on graphs to indicate the error, or uncertainty in a reported
+         * measurement.
+         *
+         * @sample       highcharts/demo/error-bar/
+         *               Error bars
+         * @extends      {plotOptions.boxplot}
+         * @product      highcharts highstock
          * @optionparent plotOptions.errorbar
          */
         seriesType('errorbar', 'boxplot', {
 
 
-            /**
-             */
             grouping: false,
 
             /**
              * The parent series of the error bar. The default value links it to
              * the previous series. Otherwise, use the id of the parent series.
              * 
-             * @type {String}
-             * @default :previous
-             * @since 3.0
+             * @since   3.0
              * @product highcharts
              */
             linkedTo: ':previous',
 
-            /**
-             */
             tooltip: {
-
-                /**
-                 */
                 pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.low}</b> - <b>{point.high}</b><br/>'
             },
 
             /**
              * The line width of the whiskers, the horizontal lines marking low
-             * and high values. When `null`, the general [lineWidth](#plotOptions.
-             * errorbar.lineWidth) applies.
+             * and high values. When `null`, the general
+             * [lineWidth](#plotOptions.errorbar.lineWidth) applies.
              * 
-             * @type {Number}
-             * @sample {highcharts} highcharts/plotoptions/error-bar-styling/ Error bar styling
-             * @default null
-             * @since 3.0
+             * @sample  {highcharts} highcharts/plotoptions/error-bar-styling/
+             *          Error bar styling
+             * @since   3.0
              * @product highcharts
              */
             whiskerWidth: null
@@ -2218,14 +2972,16 @@
             },
             pointValKey: 'high', // defines the top of the tracker
             doQuartiles: false,
-            drawDataLabels: seriesTypes.arearange ? function() {
-                var valKey = this.pointValKey;
-                seriesTypes.arearange.prototype.drawDataLabels.call(this);
-                // Arearange drawDataLabels does not reset point.y to high, but to low after drawing. #4133 
-                each(this.data, function(point) {
-                    point.y = point[valKey];
-                });
-            } : noop,
+            drawDataLabels: seriesTypes.arearange ?
+                function() {
+                    var valKey = this.pointValKey;
+                    seriesTypes.arearange.prototype.drawDataLabels.call(this);
+                    // Arearange drawDataLabels does not reset point.y to high,
+                    // but to low after drawing (#4133)
+                    each(this.data, function(point) {
+                        point.y = point[valKey];
+                    });
+                } : noop,
 
             /**
              * Get the width and X offset, either on top of the linked series column
@@ -2237,9 +2993,79 @@
             }
         });
 
-        /* ****************************************************************************
-         * End error bar series code                                                  *
-         *****************************************************************************/
+        /**
+         * A `errorbar` series. If the [type](#series.errorbar.type) option
+         * is not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to
+         * [plotOptions.errorbar](#plotOptions.errorbar).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.errorbar
+         * @excluding dataParser,dataURL,stack,stacking
+         * @product   highcharts
+         * @apioption series.errorbar
+         */
+
+        /**
+         * An array of data points for the series. For the `errorbar` series
+         * type, points can be given in the following ways:
+         * 
+         * 1.  An array of arrays with 3 or 2 values. In this case, the values
+         * correspond to `x,low,high`. If the first value is a string, it is
+         * applied as the name of the point, and the `x` value is inferred.
+         * The `x` value can also be omitted, in which case the inner arrays
+         * should be of length 2\. Then the `x` value is automatically calculated,
+         * either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 10, 2],
+         *         [1, 1, 8],
+         *         [2, 4, 5]
+         *     ]
+         *  ```
+         * 
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.errorbar.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         low: 0,
+         *         high: 0,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         low: 5,
+         *         high: 5,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type      {Array<Object|Array>}
+         * @extends   series.arearange.data
+         * @excluding dataLabels,drilldown,marker,states
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects
+         * @product   highcharts
+         * @apioption series.errorbar.data
+         */
 
     }(Highcharts));
     (function(H) {
@@ -2248,6 +3074,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var correctFloat = H.correctFloat,
             isNumber = H.isNumber,
             pick = H.pick,
@@ -2256,24 +3083,35 @@
             seriesType = H.seriesType,
             seriesTypes = H.seriesTypes;
 
-        /* ****************************************************************************
-         * Start Waterfall series code                                                *
-         *****************************************************************************/
         /**
-         * @extends {plotOptions.column}
+         * A waterfall chart displays sequentially introduced positive or negative
+         * values in cumulative columns.
+         *
+         * @sample       highcharts/demo/waterfall/ Waterfall chart
+         * @extends      {plotOptions.column}
+         * @product      highcharts
          * @optionparent plotOptions.waterfall
          */
         seriesType('waterfall', 'column', {
 
-            /**
-             */
             dataLabels: {
-
-                /**
-                 */
                 inside: true
             },
 
+
+            /**
+             * The color used specifically for positive point columns. When not
+             * specified, the general series color is used.
+             * 
+             * In styled mode, the waterfall colors can be set with the
+             * `.highcharts-point-negative`, `.highcharts-sum` and
+             * `.highcharts-intermediate-sum` classes.
+             * 
+             * @type      {Color}
+             * @sample    {highcharts} highcharts/demo/waterfall/ Waterfall
+             * @product   highcharts
+             * @apioption plotOptions.waterfall.upColor
+             */
 
             // Prototype members
         }, {
@@ -2317,14 +3155,19 @@
                     shapeArgs = point.shapeArgs;
 
                     // get current stack
-                    stack = stacking && yAxis.stacks[(series.negStacks && yValue < threshold ? '-' : '') + series.stackKey];
+                    stack = stacking &&
+                        yAxis.stacks[
+                            (series.negStacks && yValue < threshold ? '-' : '') +
+                            series.stackKey
+                        ];
                     stackIndicator = series.getStackIndicator(
                         stackIndicator,
                         point.x,
                         series.index
                     );
-                    range = stack ?
-                        stack[point.x].points[stackIndicator.key] : [0, yValue];
+                    range = pick(
+                        stack && stack[point.x].points[stackIndicator.key], [0, yValue]
+                    );
 
                     // override point value for sums
                     // #3710 Update point does not propagate to sum
@@ -2340,23 +3183,30 @@
                     // sum points
                     if (point.isSum) {
                         shapeArgs.y = yAxis.translate(range[1], 0, 1, 0, 1);
-                        shapeArgs.height = Math.min(yAxis.translate(range[0], 0, 1, 0, 1), yAxis.len) -
-                            shapeArgs.y; // #4256
+                        shapeArgs.height = Math.min(
+                            yAxis.translate(range[0], 0, 1, 0, 1),
+                            yAxis.len
+                        ) - shapeArgs.y; // #4256
 
                     } else if (point.isIntermediateSum) {
                         shapeArgs.y = yAxis.translate(range[1], 0, 1, 0, 1);
-                        shapeArgs.height = Math.min(yAxis.translate(previousIntermediate, 0, 1, 0, 1), yAxis.len) -
-                            shapeArgs.y;
+                        shapeArgs.height = Math.min(
+                            yAxis.translate(previousIntermediate, 0, 1, 0, 1),
+                            yAxis.len
+                        ) - shapeArgs.y;
                         previousIntermediate = range[1];
 
-                        // If it's not the sum point, update previous stack end position and get
-                        // shape height (#3886)
+                        // If it's not the sum point, update previous stack end position
+                        // and get shape height (#3886)
                     } else {
                         shapeArgs.height = yValue > 0 ?
                             yAxis.translate(previousY, 0, 1, 0, 1) - shapeArgs.y :
-                            yAxis.translate(previousY, 0, 1, 0, 1) - yAxis.translate(previousY - yValue, 0, 1, 0, 1);
+                            yAxis.translate(previousY, 0, 1, 0, 1) -
+                            yAxis.translate(previousY - yValue, 0, 1, 0, 1);
 
-                        previousY += stack && stack[point.x] ? stack[point.x].total : yValue;
+                        previousY += stack && stack[point.x] ?
+                            stack[point.x].total :
+                            yValue;
                     }
 
                     // #3952 Negative sum or intermediate sum not rendered correctly
@@ -2365,8 +3215,10 @@
                         shapeArgs.height *= -1;
                     }
 
-                    point.plotY = shapeArgs.y = Math.round(shapeArgs.y) - (series.borderWidth % 2) / 2;
-                    shapeArgs.height = Math.max(Math.round(shapeArgs.height), 0.001); // #3151
+                    point.plotY = shapeArgs.y = Math.round(shapeArgs.y) -
+                        (series.borderWidth % 2) / 2;
+                    // #3151
+                    shapeArgs.height = Math.max(Math.round(shapeArgs.height), 0.001);
                     point.yBottom = shapeArgs.y + shapeArgs.height;
 
                     if (shapeArgs.height <= minPointLength && !point.isNull) {
@@ -2394,13 +3246,15 @@
             },
 
             /**
-             * Call default processData then override yData to reflect waterfall's extremes on yAxis
+             * Call default processData then override yData to reflect
+             * waterfall's extremes on yAxis
              */
             processData: function(force) {
                 var series = this,
                     options = series.options,
                     yData = series.yData,
-                    points = series.options.data, // #3710 Update point does not propagate to sum
+                    // #3710 Update point does not propagate to sum
+                    points = series.options.data,
                     point,
                     dataLength = yData.length,
                     threshold = options.threshold || 0,
@@ -2443,10 +3297,11 @@
              */
             toYData: function(pt) {
                 if (pt.isSum) {
-                    return (pt.x === 0 ? null : 'sum'); //#3245 Error when first element is Sum or Intermediate Sum
+                    // #3245 Error when first element is Sum or Intermediate Sum
+                    return (pt.x === 0 ? null : 'sum');
                 }
                 if (pt.isIntermediateSum) {
-                    return (pt.x === 0 ? null : 'intermediateSum'); //#3245
+                    return (pt.x === 0 ? null : 'intermediateSum'); // #3245
                 }
                 return pt.y;
             },
@@ -2454,8 +3309,8 @@
 
 
             /**
-             * Return an empty path initially, because we need to know the stroke-width in order 
-             * to set the final path.
+             * Return an empty path initially, because we need to know the 
+             * stroke-width in order to set the final path.
              */
             getGraphPath: function() {
                 return ['M', 0, 0];
@@ -2470,6 +3325,7 @@
                     length = data.length,
                     lineWidth = this.graph.strokeWidth() + this.borderWidth,
                     normalizer = Math.round(lineWidth) % 2 / 2,
+                    reversedXAxis = this.xAxis.reversed,
                     reversedYAxis = this.yAxis.reversed,
                     path = [],
                     prevArgs,
@@ -2483,10 +3339,10 @@
 
                     d = [
                         'M',
-                        prevArgs.x + prevArgs.width,
+                        prevArgs.x + (reversedXAxis ? 0 : prevArgs.width),
                         prevArgs.y + data[i - 1].minPointLengthOffset + normalizer,
                         'L',
-                        pointArgs.x,
+                        pointArgs.x + (reversedXAxis ? prevArgs.width : 0),
                         prevArgs.y + data[i - 1].minPointLengthOffset + normalizer
                     ];
 
@@ -2571,9 +3427,108 @@
 
         });
 
-        /* ****************************************************************************
-         * End Waterfall series code                                                  *
-         *****************************************************************************/
+        /**
+         * A `waterfall` series. If the [type](#series.waterfall.type) option
+         * is not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to
+         * [plotOptions.waterfall](#plotOptions.waterfall).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.waterfall
+         * @excluding dataParser,dataURL
+         * @product   highcharts
+         * @apioption series.waterfall
+         */
+
+        /**
+         * An array of data points for the series. For the `waterfall` series
+         * type, points can be given in the following ways:
+         * 
+         * 1.  An array of numerical values. In this case, the numerical values
+         * will be interpreted as `y` options. The `x` values will be automatically
+         * calculated, either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options. If the axis has
+         * categories, these will be used. Example:
+         * 
+         *  ```js
+         *  data: [0, 5, 3, 5]
+         *  ```
+         * 
+         * 2.  An array of arrays with 2 values. In this case, the values correspond
+         * to `x,y`. If the first value is a string, it is applied as the name
+         * of the point, and the `x` value is inferred.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 7],
+         *         [1, 8],
+         *         [2, 3]
+         *     ]
+         *  ```
+         * 
+         * 3.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series'
+         * [turboThreshold](#series.waterfall.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         y: 8,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         y: 8,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type      {Array<Object|Array|Number>}
+         * @extends   series.line.data
+         * @excluding marker
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects    
+         * @product   highcharts
+         * @apioption series.waterfall.data
+         */
+
+
+        /**
+         * When this property is true, the points acts as a summary column for
+         * the values added or substracted since the last intermediate sum,
+         * or since the start of the series. The `y` value is ignored.
+         * 
+         * @type      {Boolean}
+         * @sample    {highcharts} highcharts/demo/waterfall/ Waterfall
+         * @default   false
+         * @product   highcharts
+         * @apioption series.waterfall.data.isIntermediateSum
+         */
+
+        /**
+         * When this property is true, the point display the total sum across
+         * the entire series. The `y` value is ignored.
+         * 
+         * @type      {Boolean}
+         * @sample    {highcharts} highcharts/demo/waterfall/ Waterfall
+         * @default   false
+         * @product   highcharts
+         * @apioption series.waterfall.data.isSum
+         */
 
     }(Highcharts));
     (function(H) {
@@ -2587,13 +3542,21 @@
             Series = H.Series,
             seriesType = H.seriesType,
             seriesTypes = H.seriesTypes;
-        /**
-         * The polygon series prototype
-         */
 
         /**
-         * @extends {plotOptions.scatter}
-         * @optionsparent plotOptions.polygon
+         * A polygon series can be used to draw any freeform shape in the cartesian
+         * coordinate system. A fill is applied with the `color` option, and
+         * stroke is applied through `lineWidth` and `lineColor` options. Requires
+         * the `highcharts-more.js` file.
+         * 
+         * @type {Object}
+         * @extends plotOptions.scatter
+         * @excluding softThreshold,threshold
+         * @sample {highcharts} highcharts/demo/polygon/ Polygon
+         * @sample {highstock} highcharts/demo/polygon/ Polygon
+         * @since 4.1.0
+         * @product highcharts highstock
+         * @optionparent plotOptions.polygon
          */
         seriesType('polygon', 'scatter', {
             marker: {
@@ -2637,6 +3600,85 @@
             setStackedPoints: noop // No stacking points on polygons (#5310)
         });
 
+
+
+        /**
+         * A `polygon` series. If the [type](#series.polygon.type) option is
+         * not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to [plotOptions.
+         * polygon](#plotOptions.polygon).
+         * 
+         * @type {Object}
+         * @extends series,plotOptions.polygon
+         * @excluding dataParser,dataURL,stack
+         * @product highcharts highstock
+         * @apioption series.polygon
+         */
+
+        /**
+         * An array of data points for the series. For the `polygon` series
+         * type, points can be given in the following ways:
+         * 
+         * 1.  An array of numerical values. In this case, the numerical values
+         * will be interpreted as `y` options. The `x` values will be automatically
+         * calculated, either starting at 0 and incremented by 1, or from `pointStart`
+         * and `pointInterval` given in the series options. If the axis has
+         * categories, these will be used. Example:
+         * 
+         *  ```js
+         *  data: [0, 5, 3, 5]
+         *  ```
+         * 
+         * 2.  An array of arrays with 2 values. In this case, the values correspond
+         * to `x,y`. If the first value is a string, it is applied as the name
+         * of the point, and the `x` value is inferred.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 10],
+         *         [1, 3],
+         *         [2, 1]
+         *     ]
+         *  ```
+         * 
+         * 3.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.polygon.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         y: 1,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         y: 8,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type {Array<Object|Array>}
+         * @extends series.line.data
+         * @sample {highcharts} highcharts/chart/reflow-true/
+         *         Numerical values
+         * @sample {highcharts} highcharts/series/data-array-of-arrays/
+         *         Arrays of numeric x and y
+         * @sample {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *         Arrays of datetime x and y
+         * @sample {highcharts} highcharts/series/data-array-of-name-value/
+         *         Arrays of point.name and y
+         * @sample {highcharts} highcharts/series/data-array-of-objects/
+         *         Config objects
+         * @product highcharts highstock
+         * @apioption series.polygon.data
+         */
+
     }(Highcharts));
     (function(H) {
         /**
@@ -2644,6 +3686,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
         var arrayMax = H.arrayMax,
             arrayMin = H.arrayMin,
             Axis = H.Axis,
@@ -2658,36 +3701,42 @@
             seriesType = H.seriesType,
             seriesTypes = H.seriesTypes;
 
-        /* ****************************************************************************
-         * Start Bubble series code											          *
-         *****************************************************************************/
-
 
         /**
-         * @extends plotOptions.scatter
+         * A bubble series is a three dimensional series type where each point renders
+         * an X, Y and Z value. Each points is drawn as a bubble where the position
+         * along the X and Y axes mark the X and Y values, and the size of the bubble
+         * relates to the Z value. Requires `highcharts-more.js`.
+         *
+         * @sample       {highcharts} highcharts/demo/bubble/ Bubble chart
+         * @extends      plotOptions.scatter
+         * @product      highcharts highstock
          * @optionparent plotOptions.bubble
          */
         seriesType('bubble', 'scatter', {
 
-            /**
-             */
             dataLabels: {
-
-                /**
-                 */
                 formatter: function() { // #2945
                     return this.point.z;
                 },
-
-                /**
-                 */
                 inside: true,
-
-                /**
-                 */
                 verticalAlign: 'middle'
             },
-            // displayNegative: true,
+
+            /**
+             * Whether to display negative sized bubbles. The threshold is given
+             * by the [zThreshold](#plotOptions.bubble.zThreshold) option, and negative
+             * bubbles can be visualized by setting
+             * [negativeColor](#plotOptions.bubble.negativeColor).
+             * 
+             * @type      {Boolean}
+             * @sample    {highcharts} highcharts/plotoptions/bubble-negative/
+             *            Negative bubbles
+             * @default   true
+             * @since     3.0
+             * @product   highcharts
+             * @apioption plotOptions.bubble.displayNegative
+             */
 
             /**
              * Options for the point markers of line-like series. Properties like
@@ -2695,34 +3744,26 @@
              * of the markers. Other series types, like column series, don't have
              * markers, but have visual options on the series level instead.
              * 
-             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
-             * style/style-by-css), the markers can be styled with the `.highcharts-
-             * point`, `.highcharts-point-hover` and `.highcharts-point-select`
+             * In styled mode, the markers can be styled with the `.highcharts-point`,
+             * `.highcharts-point-hover` and `.highcharts-point-select`
              * class names.
              * 
-             * @type {Object}
-             * @extends plotOptions.series.marker
-             * @excluding radius
-             * @product highcharts
+             * @type      {Object}
+             * @extends   plotOptions.series.marker
+             * @excluding enabled,height,radius,width
+             * @product   highcharts
              */
             marker: {
 
-                // Avoid offset in Point.setState
-
                 /**
+                 * In bubble charts, the radius is overridden and determined based on 
+                 * the point's data value.
                  */
+                /** @ignore */
                 radius: null,
 
-                /**
-                 */
                 states: {
-
-                    /**
-                     */
                     hover: {
-
-                        /**
-                         */
                         radiusPlus: 0
                     }
                 },
@@ -2731,21 +3772,21 @@
                  * A predefined shape or symbol for the marker. Possible values are
                  * "circle", "square", "diamond", "triangle" and "triangle-down".
                  * 
-                 * Additionally, the URL to a graphic can be given on the form `url(graphic.
-                 * png)`. Note that for the image to be applied to exported charts,
-                 * its URL needs to be accessible by the export server.
+                 * Additionally, the URL to a graphic can be given on the form
+                 * `url(graphic.png)`. Note that for the image to be applied to exported
+                 * charts, its URL needs to be accessible by the export server.
                  * 
                  * Custom callbacks for symbol path generation can also be added to
                  * `Highcharts.SVGRenderer.prototype.symbols`. The callback is then
                  * used by its method name, as shown in the demo.
                  * 
-                 * @validvalue ["circle", "square", "diamond", "triangle", "triangle-down"]
-                 * @type {String}
-                 * @sample {highcharts} highcharts/plotoptions/bubble-symbol/ Bubble chart with various symbols
-                 * @sample {highcharts} highcharts/plotoptions/series-marker-symbol/ General chart with predefined, graphic and custom markers
-                 * @default circle
-                 * @since 5.0.11
-                 * @product highcharts
+                 * @validvalue ["circle", "square", "diamond", "triangle",
+                 *              "triangle-down"]
+                 * @sample     {highcharts} highcharts/plotoptions/bubble-symbol/
+                 *             Bubble chart with various symbols
+                 * @sample     {highcharts} highcharts/plotoptions/series-marker-symbol/
+                 *             General chart with predefined, graphic and custom markers
+                 * @since      5.0.11
                  */
                 symbol: 'circle'
             },
@@ -2756,10 +3797,9 @@
              * Can be either pixels (when no unit is given), or a percentage of
              * the smallest one of the plot width and height.
              * 
-             * @type {String}
-             * @sample {highcharts} highcharts/plotoptions/bubble-size/ Bubble size
-             * @default 8
-             * @since 3.0
+             * @type    {Number|String}
+             * @sample  {highcharts} highcharts/plotoptions/bubble-size/ Bubble size
+             * @since   3.0
              * @product highcharts
              */
             minSize: 8,
@@ -2770,15 +3810,57 @@
              * Can be either pixels (when no unit is given), or a percentage of
              * the smallest one of the plot width and height.
              * 
-             * @type {String}
-             * @sample {highcharts} highcharts/plotoptions/bubble-size/ Bubble size
-             * @default 20%
-             * @since 3.0
+             * @sample  {highcharts} highcharts/plotoptions/bubble-size/
+             *          Bubble size
+             * @since   3.0
              * @product highcharts
              */
             maxSize: '20%',
-            // negativeColor: null,
-            // sizeBy: 'area'
+
+            /**
+             * When a point's Z value is below the
+             * [zThreshold](#plotOptions.bubble.zThreshold) setting, this color is used.
+             * 
+             * @type      {Color}
+             * @sample    {highcharts} highcharts/plotoptions/bubble-negative/
+             *            Negative bubbles
+             * @default   null
+             * @since     3.0
+             * @product   highcharts
+             * @apioption plotOptions.bubble.negativeColor
+             */
+
+            /**
+             * Whether the bubble's value should be represented by the area or the
+             * width of the bubble. The default, `area`, corresponds best to the
+             * human perception of the size of each bubble.
+             * 
+             * @validvalue ["area", "width"]
+             * @type       {String}
+             * @sample     {highcharts} highcharts/plotoptions/bubble-sizeby/
+             *             Comparison of area and size
+             * @default    area
+             * @since      3.0.7
+             * @product    highcharts
+             * @apioption  plotOptions.bubble.sizeBy
+             */
+
+            /**
+             * When this is true, the absolute value of z determines the size of
+             * the bubble. This means that with the default `zThreshold` of 0, a
+             * bubble of value -1 will have the same size as a bubble of value 1,
+             * while a bubble of value 0 will have a smaller size according to
+             * `minSize`.
+             * 
+             * @type      {Boolean}
+             * @sample    {highcharts}
+             *            highcharts/plotoptions/bubble-sizebyabsolutevalue/
+             *            Size by absolute value, various thresholds
+             * @default   false
+             * @since     4.1.9
+             * @product   highcharts
+             * @apioption plotOptions.bubble.sizeByAbsoluteValue
+             */
 
             /**
              * When this is true, the series will not cause the Y axis to cross
@@ -2789,43 +3871,23 @@
              * 3 will make the Y axis show negative values according to the `minPadding`
              * option. If `softThreshold` is `true`, the Y axis starts at 0.
              * 
-             * @type {Boolean}
-             * @default false
-             * @since 4.1.9
+             * @since   4.1.9
              * @product highcharts
              */
             softThreshold: false,
 
-            /**
-             */
             states: {
-
-                /**
-                 */
                 hover: {
-
-                    /**
-                     */
                     halo: {
-
-                        /**
-                         */
                         size: 5
                     }
                 }
             },
 
-            /**
-             */
             tooltip: {
-
-                /**
-                 */
                 pointFormat: '({point.x}, {point.y}), Size: {point.z}'
             },
 
-            /**
-             */
             turboThreshold: 0,
 
             /**
@@ -2834,17 +3896,44 @@
              * is `true` and a [negativeColor](#plotOptions.bubble.negativeColor)
              * is given, points with lower Z is colored.
              * 
-             * @type {Number}
-             * @sample {highcharts} highcharts/plotoptions/bubble-negative/ Negative bubbles
+             * @type    {Number}
+             * @sample  {highcharts} highcharts/plotoptions/bubble-negative/
+             *          Negative bubbles
              * @default 0
-             * @since 3.0
+             * @since   3.0
              * @product highcharts
              */
             zThreshold: 0,
 
-            /**
-             */
             zoneAxis: 'z'
+
+            /**
+             * The minimum for the Z value range. Defaults to the highest Z value
+             * in the data.
+             * 
+             * @type      {Number}
+             * @see       [zMin](#plotOptions.bubble.zMin)
+             * @sample    {highcharts} highcharts/plotoptions/bubble-zmin-zmax/
+             *            Z has a possible range of 0-100
+             * @default   null
+             * @since     4.0.3
+             * @product   highcharts
+             * @apioption plotOptions.bubble.zMax
+             */
+
+            /**
+             * The minimum for the Z value range. Defaults to the lowest Z value
+             * in the data.
+             * 
+             * @type      {Number}
+             * @see       [zMax](#plotOptions.bubble.zMax)
+             * @sample    {highcharts} highcharts/plotoptions/bubble-zmin-zmax/
+             *            Z has a possible range of 0-100
+             * @default   null
+             * @since     4.0.3
+             * @product   highcharts
+             * @apioption plotOptions.bubble.zMin
+             */
 
             // Prototype members
         }, {
@@ -2859,9 +3948,9 @@
 
 
             /**
-             * Get the radius for each point based on the minSize, maxSize and each point's Z value. This
-             * must be done prior to Series.translate because the axis needs to add padding in
-             * accordance with the point sizes.
+             * Get the radius for each point based on the minSize, maxSize and each
+             * point's Z value. This must be done prior to Series.translate because
+             * the axis needs to add padding in accordance with the point sizes.
              */
             getRadii: function(zMin, zMax, minSize, maxSize) {
                 var len,
@@ -2881,8 +3970,8 @@
 
                     value = zData[i];
 
-                    // When sizing by threshold, the absolute value of z determines the size
-                    // of the bubble.
+                    // When sizing by threshold, the absolute value of z determines
+                    // the size of the bubble.
                     if (options.sizeByAbsoluteValue && value !== null) {
                         value = Math.abs(value - zThreshold);
                         zMax = Math.max(zMax - zThreshold, Math.abs(zMin - zThreshold));
@@ -2891,7 +3980,8 @@
 
                     if (value === null) {
                         radius = null;
-                        // Issue #4419 - if value is less than zMin, push a radius that's always smaller than the minimum size
+                        // Issue #4419 - if value is less than zMin, push a radius that's
+                        // always smaller than the minimum size
                     } else if (value < zMin) {
                         radius = minSize / 2 - 1;
                     } else {
@@ -2982,7 +4072,8 @@
                             height: 2 * radius
                         };
                     } else { // below zThreshold
-                        point.shapeArgs = point.plotY = point.dlBox = undefined; // #1691
+                        // #1691
+                        point.shapeArgs = point.plotY = point.dlBox = undefined;
                     }
                 }
             },
@@ -2996,7 +4087,8 @@
             haloPath: function(size) {
                 return Point.prototype.haloPath.call(
                     this,
-                    size === 0 ? 0 : (this.marker ? this.marker.radius || 0 : 0) + size // #6067
+                    // #6067
+                    size === 0 ? 0 : (this.marker ? this.marker.radius || 0 : 0) + size
                 );
             },
             ttBelow: false
@@ -3029,7 +4121,10 @@
                 var seriesOptions = series.options,
                     zData;
 
-                if (series.bubblePadding && (series.visible || !chart.options.chart.ignoreHiddenSeries)) {
+                if (
+                    series.bubblePadding &&
+                    (series.visible || !chart.options.chart.ignoreHiddenSeries)
+                ) {
 
                     // Correction for #1673
                     axis.allowZoomOutside = true;
@@ -3062,10 +4157,15 @@
                                 zMin,
                                 Math.max(
                                     arrayMin(zData),
-                                    seriesOptions.displayNegative === false ? seriesOptions.zThreshold : -Number.MAX_VALUE
+                                    seriesOptions.displayNegative === false ?
+                                    seriesOptions.zThreshold :
+                                    -Number.MAX_VALUE
                                 )
                             ));
-                            zMax = pick(seriesOptions.zMax, Math.max(zMax, arrayMax(zData)));
+                            zMax = pick(
+                                seriesOptions.zMax,
+                                Math.max(zMax, arrayMax(zData))
+                            );
                         }
                     }
                 }
@@ -3083,10 +4183,20 @@
 
                 if (range > 0) {
                     while (i--) {
-                        if (isNumber(data[i]) && axis.dataMin <= data[i] && data[i] <= axis.dataMax) {
+                        if (
+                            isNumber(data[i]) &&
+                            axis.dataMin <= data[i] &&
+                            data[i] <= axis.dataMax
+                        ) {
                             radius = series.radii[i];
-                            pxMin = Math.min(((data[i] - min) * transA) - radius, pxMin);
-                            pxMax = Math.max(((data[i] - min) * transA) + radius, pxMax);
+                            pxMin = Math.min(
+                                ((data[i] - min) * transA) - radius,
+                                pxMin
+                            );
+                            pxMax = Math.max(
+                                ((data[i] - min) * transA) + radius,
+                                pxMax
+                            );
                         }
                     }
                 }
@@ -3095,20 +4205,104 @@
             if (activeSeries.length && range > 0 && !this.isLog) {
                 pxMax -= axisLength;
                 transA *= (axisLength + pxMin - pxMax) / axisLength;
-                each([
-                    ['min', 'userMin', pxMin],
-                    ['max', 'userMax', pxMax]
-                ], function(keys) {
-                    if (pick(axis.options[keys[0]], axis[keys[1]]) === undefined) {
-                        axis[keys[0]] += keys[2] / transA;
+                each(
+                    [
+                        ['min', 'userMin', pxMin],
+                        ['max', 'userMax', pxMax]
+                    ],
+                    function(keys) {
+                        if (pick(axis.options[keys[0]], axis[keys[1]]) === undefined) {
+                            axis[keys[0]] += keys[2] / transA;
+                        }
                     }
-                });
+                );
             }
         };
 
-        /* ****************************************************************************
-         * End Bubble series code                                                     *
-         *****************************************************************************/
+
+        /**
+         * A `bubble` series. If the [type](#series.bubble.type) option is
+         * not specified, it is inherited from [chart.type](#chart.type).
+         * 
+         * For options that apply to multiple series, it is recommended to add
+         * them to the [plotOptions.series](#plotOptions.series) options structure.
+         * To apply to all series of this specific type, apply it to [plotOptions.
+         * bubble](#plotOptions.bubble).
+         * 
+         * @type      {Object}
+         * @extends   series,plotOptions.bubble
+         * @excluding dataParser,dataURL,stack
+         * @product   highcharts
+         * @apioption series.bubble
+         */
+
+        /**
+         * An array of data points for the series. For the `bubble` series type,
+         * points can be given in the following ways:
+         * 
+         * 1.  An array of arrays with 3 or 2 values. In this case, the values
+         * correspond to `x,y,z`. If the first value is a string, it is applied
+         * as the name of the point, and the `x` value is inferred. The `x`
+         * value can also be omitted, in which case the inner arrays should
+         * be of length 2\. Then the `x` value is automatically calculated,
+         * either starting at 0 and incremented by 1, or from `pointStart` and
+         * `pointInterval` given in the series options.
+         * 
+         *  ```js
+         *     data: [
+         *         [0, 1, 2],
+         *         [1, 5, 5],
+         *         [2, 0, 2]
+         *     ]
+         *  ```
+         * 
+         * 2.  An array of objects with named values. The objects are point
+         * configuration objects as seen below. If the total number of data
+         * points exceeds the series' [turboThreshold](#series.bubble.turboThreshold),
+         * this option is not available.
+         * 
+         *  ```js
+         *     data: [{
+         *         x: 1,
+         *         y: 1,
+         *         z: 1,
+         *         name: "Point2",
+         *         color: "#00FF00"
+         *     }, {
+         *         x: 1,
+         *         y: 5,
+         *         z: 4,
+         *         name: "Point1",
+         *         color: "#FF00FF"
+         *     }]
+         *  ```
+         * 
+         * @type      {Array<Object|Array>}
+         * @extends   series.line.data
+         * @excluding marker
+         * @sample    {highcharts} highcharts/chart/reflow-true/
+         *            Numerical values
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays/
+         *            Arrays of numeric x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-arrays-datetime/
+         *            Arrays of datetime x and y
+         * @sample    {highcharts} highcharts/series/data-array-of-name-value/
+         *            Arrays of point.name and y
+         * @sample    {highcharts} highcharts/series/data-array-of-objects/
+         *            Config objects
+         * @product   highcharts
+         * @apioption series.bubble.data
+         */
+
+        /**
+         * The size value for each bubble. The bubbles' diameters are computed
+         * based on the `z`, and controlled by series options like `minSize`,
+         * `maxSize`, `sizeBy`, `zMin` and `zMax`.
+         * 
+         * @type {Number}
+         * @product highcharts
+         * @apioption series.bubble.data.z
+         */
 
     }(Highcharts));
     (function(H) {
@@ -3117,6 +4311,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
 
         /**
          * Extensions for polar charts. Additionally, much of the geometry required for polar charts is
@@ -3177,7 +4372,7 @@
                 leftContY,
                 rightContX,
                 rightContY,
-                dLControlPoint, //distance left control point
+                dLControlPoint, // distance left control point
                 dRControlPoint,
                 leftContAngle,
                 rightContAngle,
@@ -3450,7 +4645,6 @@
 
                         group.attr(attribs);
                         if (markerGroup) {
-                            //markerGroup.attrSetters = group.attrSetters;
                             markerGroup.attr(attribs);
                         }
 

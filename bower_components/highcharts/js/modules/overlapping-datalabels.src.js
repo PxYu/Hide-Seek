@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v5.0.14 (2017-07-28)
+ * @license Highcharts JS v6.0.6 (2018-02-05)
  *
  * (c) 2009-2017 Torstein Honsi
  *
@@ -32,55 +32,51 @@
         // Collect potensial overlapping data labels. Stack labels probably don't need
         // to be considered because they are usually accompanied by data labels that lie
         // inside the columns.
-        Chart.prototype.callbacks.push(function(chart) {
-            function collectAndHide() {
-                var labels = [];
+        addEvent(Chart.prototype, 'render', function collectAndHide() {
+            var labels = [];
 
-                each(chart.yAxis || [], function(yAxis) {
-                    if (
-                        yAxis.options.stackLabels &&
-                        !yAxis.options.stackLabels.allowOverlap
-                    ) {
-                        objectEach(yAxis.stacks, function(stack) {
-                            objectEach(stack, function(stackItem) {
-                                labels.push(stackItem.label);
-                            });
+            // Consider external label collectors
+            each(this.labelCollectors || [], function(collector) {
+                labels = labels.concat(collector());
+            });
+
+            each(this.yAxis || [], function(yAxis) {
+                if (
+                    yAxis.options.stackLabels &&
+                    !yAxis.options.stackLabels.allowOverlap
+                ) {
+                    objectEach(yAxis.stacks, function(stack) {
+                        objectEach(stack, function(stackItem) {
+                            labels.push(stackItem.label);
                         });
-                    }
-                });
+                    });
+                }
+            });
 
-                each(chart.series || [], function(series) {
-                    var dlOptions = series.options.dataLabels,
-                        // Range series have two collections
-                        collections = series.dataLabelCollections || ['dataLabel'];
+            each(this.series || [], function(series) {
+                var dlOptions = series.options.dataLabels,
+                    // Range series have two collections
+                    collections = series.dataLabelCollections || ['dataLabel'];
 
-                    if (
-                        (dlOptions.enabled || series._hasPointLabels) &&
-                        !dlOptions.allowOverlap &&
-                        series.visible
-                    ) { // #3866
-                        each(collections, function(coll) {
-                            each(series.points, function(point) {
-                                if (point[coll]) {
-                                    point[coll].labelrank = pick(
-                                        point.labelrank,
-                                        point.shapeArgs && point.shapeArgs.height
-                                    ); // #4118
-                                    labels.push(point[coll]);
-                                }
-                            });
+                if (
+                    (dlOptions.enabled || series._hasPointLabels) &&
+                    !dlOptions.allowOverlap &&
+                    series.visible
+                ) { // #3866
+                    each(collections, function(coll) {
+                        each(series.points, function(point) {
+                            if (point[coll]) {
+                                point[coll].labelrank = pick(
+                                    point.labelrank,
+                                    point.shapeArgs && point.shapeArgs.height
+                                ); // #4118
+                                labels.push(point[coll]);
+                            }
                         });
-                    }
-                });
-                chart.hideOverlappingLabels(labels);
-            }
-
-            // Do it now ...
-            collectAndHide();
-
-            // ... and after each chart redraw
-            addEvent(chart, 'redraw', collectAndHide);
-
+                    });
+                }
+            });
+            this.hideOverlappingLabels(labels);
         });
 
         /**

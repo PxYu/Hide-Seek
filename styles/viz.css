@@ -7,8 +7,8 @@ body {
     text-align: center;
     font-size: 32px;
     /* margin-top: 50px; */
-    margin-top: 10px;
-    margin-bottom: 10px;
+    /* margin-top: 10px; */
+    /* margin-bottom: 10px; */
 }
 
 #wrapper {
@@ -118,7 +118,7 @@ div.tab button {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 14px 16px;
+    /* padding: 14px 16px; */
     transition: 0.3s;
     width: 50%;
 }

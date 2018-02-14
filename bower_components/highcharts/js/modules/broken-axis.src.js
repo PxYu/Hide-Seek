@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v5.0.14 (2017-07-28)
+ * @license Highcharts JS v6.0.6 (2018-02-05)
  *
  * (c) 2009-2017 Torstein Honsi
  *
@@ -19,6 +19,7 @@
          *
          * License: www.highcharts.com/license
          */
+        /* eslint max-len: 0 */
 
         var pick = H.pick,
             wrap = H.wrap,
@@ -345,7 +346,9 @@
          * module as of #5045.
          */
         H.Series.prototype.gappedPath = function() {
-            var gapSize = this.options.gapSize,
+            var currentDataGrouping = this.currentDataGrouping,
+                groupingSize = currentDataGrouping && currentDataGrouping.totalRange,
+                gapSize = this.options.gapSize,
                 points = this.points.slice(),
                 i = points.length - 1,
                 yAxis = this.yAxis,
@@ -353,22 +356,22 @@
                 stack;
 
             /**
-             * Defines when to display a gap in the graph, together with the `gapUnit`
-             * option.
+             * Defines when to display a gap in the graph, together with the
+             * [gapUnit](plotOptions.series.gapUnit) option.
              * 
-             * When the `gapUnit` is `relative` (default), a gap size of 5 means
-             * that if the distance between two points is greater than five times
-             * that of the two closest points, the graph will be broken.
+             * In case when `dataGrouping` is enabled, points can be grouped into a 
+             * larger time span. This can make the grouped points to have a greater 
+             * distance than the absolute value of `gapSize` property, which will result 
+             * in disappearing graph completely. To prevent this situation the mentioned 
+             * distance between grouped points is used instead of previously defined 
+             * `gapSize`.
              *
-             * When the `gapUnit` is `value`, the gap is based on absolute axis values,
-             * which on a datetime axis is milliseconds.
-             * 
              * In practice, this option is most often used to visualize gaps in
              * time series. In a stock chart, intraday data is available for daytime
              * hours, while gaps will appear in nights and weekends.
              * 
              * @type {Number}
-             * @see [xAxis.breaks](#xAxis.breaks)
+             * @see [gapUnit](plotOptions.series.gapUnit) and [xAxis.breaks](#xAxis.breaks)
              * @sample {highstock} stock/plotoptions/series-gapsize/
              *         Setting the gap size to 2 introduces gaps for weekends in daily
              *         datasets.
@@ -378,13 +381,21 @@
              */
 
             /**
-             * Together with `gapSize`, this option defines where to draw gaps in the 
-             * graph.
+             * Together with [gapSize](plotOptions.series.gapSize), this option defines
+             * where to draw gaps in the graph.
+             * 
+             * When the `gapUnit` is `relative` (default), a gap size of 5 means
+             * that if the distance between two points is greater than five times
+             * that of the two closest points, the graph will be broken.
+             *
+             * When the `gapUnit` is `value`, the gap is based on absolute axis values,
+             * which on a datetime axis is milliseconds. This also applies to the
+             * navigator series that inherits gap options from the base series.
              *
              * @type {String}
              * @see [gapSize](plotOptions.series.gapSize)
              * @default relative
-             * @validvalues ["relative", "value"]
+             * @validvalue ["relative", "value"]
              * @since 5.0.13
              * @product highstock
              * @apioption plotOptions.series.gapUnit
@@ -395,6 +406,11 @@
                 // Gap unit is relative
                 if (this.options.gapUnit !== 'value') {
                     gapSize *= this.closestPointRange;
+                }
+
+                // Setting a new gapSize in case dataGrouping is enabled (#7686)
+                if (groupingSize && groupingSize > gapSize) {
+                    gapSize = groupingSize;
                 }
 
                 // extension for ordinal breaks

@@ -1,5 +1,5 @@
 /*
- Highcharts JS v5.0.14 (2017-07-28)
+ Highcharts JS v6.0.6 (2018-02-05)
  Highcharts funnel module
 
  (c) 2010-2017 Torstein Honsi
