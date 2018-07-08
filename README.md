@@ -12,9 +12,13 @@ The core idea is documented in SIGIR '18 full paper "Intent-aware Query Obfuscat
 
 Hide & Seek has **not** yet been published to chrome web store. Feel free to manually install the extension following such steps.
 
-1. Download or fork project to your local environment. Click the green button `Clone or Download` in top-right corner of this page.
+1. Download or fork this project to your local environment.
 2. Open Chrome and go to `chrome://extensions`.
 3. Click "load unpacked extension...".
 4. Select the downloaded project folder.
 
 and you're good to go!
+
+**Note**:
+
+This project only includes the front-end extension of this whole project, but by default it utilizes back-end programs running on a server, credit to HCDM Group at University of Virginia.
