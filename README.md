@@ -6,7 +6,7 @@ In addition to users’ genuine search queries, Hide-n-Seek submits k cover quer
 
 <img src="https://github.com/PxYu/Hide-Seek/blob/master/workflow.png" width="50%">
 
-The core idea is documented in SIGIR '18 full paper "Intent-aware Query Obfuscation for Privacy Protection in Personalized Web Search" ([pdf](https://dl.acm.org/citation.cfm?id=3209983)). Hide-and-Seek also has its own demo paper at SIGIR '18 called "Hide-n-Seek: An Intent-aware Privacy Protection Plugin for Personalized Web Search" ([pdf](https://dl.acm.org/citation.cfm?doid=3209978.3209983)).
+The core idea is documented in SIGIR '18 full paper "Intent-aware Query Obfuscation for Privacy Protection in Personalized Web Search" ([pdf](https://dl.acm.org/citation.cfm?id=3209983)). Hide-and-Seek also has its own demo paper at SIGIR '18 called "Hide-n-Seek: An Intent-aware Privacy Protection Plugin for Personalized Web Search" ([pdf](https://dl.acm.org/citation.cfm?id=3210180)).
 
 ## How to run Hide & Seek?
 
